@@ -31,7 +31,15 @@ import java.nio.file.{Files, Path, Paths}
         else {
             println("fatal: not a wegit repository")
         }
-        
+
+        case "commit" :: message =>
+        if (checkIfRepo(currentDir)) {
+            ////
+        }
+        else {
+            println("fatal: not a wegit repository")
+        }
+
         case _ =>
         println("Usage:")
         println("  scala run *.scala -- init <directory>")

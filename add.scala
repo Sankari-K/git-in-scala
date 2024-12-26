@@ -7,9 +7,11 @@ import javax.net.ssl.TrustManager
 
 def addFiles(currentDir: String, files: List[String]): Unit = {
     var existingFiles = listFilesInDirectory(Paths.get(currentDir)).getOrElse(List[String]())
-    val index = new Index("INDEX")
-    index.readFromIndex()
+    val path = Paths.get(currentDir)
 
+    val index = new Index(currentDir)
+    index.initializeIndex()
+    
     for (file <- files) {
         if (existingFiles contains file) {
             println(s"add file to repository: $file")
