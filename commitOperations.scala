@@ -2,15 +2,40 @@ package datastructs
 
 import scala.io.Source
 import java.io.{BufferedWriter, FileWriter, PrintWriter, File}
+import java.nio.file.{Paths, Path, Files}
 import scala.collection.mutable
+import java.security.MessageDigest
 
-class Commits(private val filePath: String) {
+class Commit(val filePath: String) {
     // The dictionary to store commit hashes and their corresponding Index objects
     val commits: mutable.Map[String, Index] = mutable.Map()
+    
+    def getCommitPath(): Path = {
+        val path = Paths.get(filePath).toAbsolutePath()
+        return path.resolve("COMMIT")
+    }
+
+    def initializeCommit(): Unit = {
+        val indexPath = getCommitPath()
+        if (!Files.exists(indexPath)) {
+            Files.createFile(indexPath)
+        }
+        importCommits(indexPath.toString())
+    }
+
+    def getCommitHash(index: Index): String = {
+        val serializedMap = index.indexMap.toSeq.sorted.map { 
+            case (key, value) => s"$key=$value" 
+        }.mkString("&")
+
+        val sha1Digest = MessageDigest.getInstance("SHA-1")
+        val hashBytes = sha1Digest.digest(serializedMap.getBytes("UTF-8"))
+        hashBytes.map("%02x".format(_)).mkString
+    }
 
     def addCommit(hash: String, index: Index): Unit = {
         commits(hash) = index
-        exportCommits()
+        exportCommits(getCommitPath().toString())
     }
 
     def getCommit(hash: String): Option[Index] = {
@@ -21,7 +46,7 @@ class Commits(private val filePath: String) {
     // Remove a commit by its hash TODO: find the use for it
     def removeCommit(hash: String): Unit = {
         if (hasCommit(hash)) commits.remove(hash)
-        exportCommits()
+        exportCommits(getCommitPath().toString())
     }
 
     def listCommits(): List[String] = {
@@ -32,7 +57,7 @@ class Commits(private val filePath: String) {
         commits.contains(hash)
     }
 
-    def exportCommits(): Unit = {
+    def exportCommits(filePath: String): Unit = {
         val writer = new PrintWriter(new File(filePath))
         try {
             for ((hash, index) <- commits) {
@@ -48,7 +73,7 @@ class Commits(private val filePath: String) {
         }
     }
 
-    def importCommits(): Unit = {
+    def importCommits(filePath: String): Unit = {
         val source = scala.io.Source.fromFile(filePath).getLines().toList
         var fileLine = 0
         while (fileLine < source.length) {

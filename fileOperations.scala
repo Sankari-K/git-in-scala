@@ -1,5 +1,3 @@
-// Use this function to a) compute the sha hash given the file directory, b) go through the os file structure and return all paths
-
 package fileops
 
 import java.nio.file.{Files, Path, Paths, StandardOpenOption}
@@ -16,47 +14,47 @@ def computeFileHash(filePath: String, algorithm: String = "SHA-256"): String = {
 }
 
 def listFilesInDirectory(directory: Path): Either[Throwable, List[String]] = {
-  try {
-    val fileList = Files.walk(directory).toScala(Seq) 
-      .filter(Files.isRegularFile(_))
-      .map(path => directory.relativize(path).toString) 
-      .toList
+    try {
+      val fileList = Files.walk(directory).toScala(Seq) 
+        .filter(Files.isRegularFile(_))
+        .map(path => directory.relativize(path).toString) 
+        .toList
 
-    Right(fileList)
-  } catch {
-    case e: Throwable => Left(e) 
-  }
+        Right(fileList)
+    } catch {
+        case e: Throwable => Left(e) 
+    }
 }
 
 def addCompressedFile(inputFilePath: String, outputFilePath: String): Either[Throwable, Unit] = {
    try {
-    val inputBytes = Files.readAllBytes(Paths.get(inputFilePath)) 
+        val inputBytes = Files.readAllBytes(Paths.get(inputFilePath)) 
 
-    val outputStream = new DeflaterOutputStream(new FileOutputStream(outputFilePath))
-    try {
-      outputStream.write(inputBytes)
-    } finally {
-      outputStream.close() 
+        val outputStream = new DeflaterOutputStream(new FileOutputStream(outputFilePath))
+        try {
+            outputStream.write(inputBytes)
+        } finally {
+          outputStream.close() 
+        }
+
+        Right(()) 
+    } catch {
+        case e: Throwable => Left(e) 
     }
-
-    Right(()) 
-  } catch {
-    case e: Throwable => Left(e) 
-  }
 }
 
 def addDecompressedFile(inputFilePath: String, outputFilePath: String): Either[Throwable, Unit] = {
-  try {
-    val inputStream = new InflaterInputStream(new FileInputStream(inputFilePath))
-    val outputStream = new FileOutputStream(outputFilePath)
     try {
-      inputStream.transferTo(outputStream) 
-    } finally {
-      inputStream.close()
-      outputStream.close()
+        val inputStream = new InflaterInputStream(new FileInputStream(inputFilePath))
+        val outputStream = new FileOutputStream(outputFilePath)
+        try {
+            inputStream.transferTo(outputStream) 
+        } finally {
+            inputStream.close()
+            outputStream.close()
+        }
+        Right(())
+    } catch {
+        case e: Throwable => Left(e)
     }
-    Right(())
-  } catch {
-    case e: Throwable => Left(e)
-  }
 }

@@ -1,5 +1,5 @@
 import datastructs.Index
-import datastructs.Commits
+import datastructs.Commit
 import fileops.*
 import gitcommands.*
 
@@ -25,24 +25,17 @@ import java.nio.file.{Files, Path, Paths}
         // addFiles(currentDir, "")
 
         case "add" :: files =>
-        if (checkIfRepo(currentDir)) {
-            addFiles(currentDir, files)
-        }
-        else {
-            println("fatal: not a wegit repository")
-        }
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        addFiles(currentDir, files)
 
-        case "commit" :: message =>
-        if (checkIfRepo(currentDir)) {
-            ////
-        }
-        else {
-            println("fatal: not a wegit repository")
-        }
+        case "commit" :: message :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        commitFiles(currentDir, message)
 
         case _ =>
         println("Usage:")
         println("  scala run *.scala -- init <directory>")
         println("  scala run *.scala -- add <file>")
+        println("  scala run *.scala -- commit <message>")
   }
 }
