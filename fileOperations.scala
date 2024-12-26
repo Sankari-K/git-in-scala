@@ -2,7 +2,7 @@
 
 package fileops
 
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, Path, Paths, StandardOpenOption}
 import java.security.MessageDigest
 import scala.util.Using
 import scala.jdk.StreamConverters._
@@ -28,7 +28,7 @@ def listFilesInDirectory(directory: Path): Either[Throwable, List[String]] = {
   }
 }
 
-def compressFile(inputFilePath: String, outputFilePath: String): Either[Throwable, Unit] = {
+def addCompressedFile(inputFilePath: String, outputFilePath: String): Either[Throwable, Unit] = {
    try {
     val inputBytes = Files.readAllBytes(Paths.get(inputFilePath)) 
 
@@ -45,7 +45,7 @@ def compressFile(inputFilePath: String, outputFilePath: String): Either[Throwabl
   }
 }
 
-def decompressFile(inputFilePath: String, outputFilePath: String): Either[Throwable, Unit] = {
+def addDecompressedFile(inputFilePath: String, outputFilePath: String): Either[Throwable, Unit] = {
   try {
     val inputStream = new InflaterInputStream(new FileInputStream(inputFilePath))
     val outputStream = new FileOutputStream(outputFilePath)
