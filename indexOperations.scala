@@ -13,19 +13,19 @@ class Index(private val filePath: String) {
   def readFromIndex(): Unit = {
     val source = Source.fromFile(filePath)
     try {
-      indexMap = source.getLines().foldLeft(Map.empty[String, (String, String)]) { (acc, line) =>
-        val parts = line.split(":")
-        if (parts.length == 3) {
-          val key = parts(0)
-          val oldhash = parts(1)
-          val newhash = parts(2)
-          acc + (key -> (oldhash, newhash))
-        } else {
-          acc
+        indexMap = source.getLines().foldLeft(Map.empty[String, (String, String)]) { (acc, line) =>
+          val parts = line.split(":")
+          if (parts.length == 3) {
+            val key = parts(0)
+            val oldhash = parts(1)
+            val newhash = parts(2)
+            acc + (key -> (oldhash, newhash))
+          } else {
+            acc
+          }
         }
-      }
     } finally {
-      source.close()
+        source.close()
     }
   }
 
@@ -53,5 +53,14 @@ class Index(private val filePath: String) {
   def removeFromIndex(key: String): Unit = {
     indexMap = indexMap - key
     writeToIndex()
+  }
+
+  def getValueFromIndex(key: String): (String, String) = {
+    if (indexMap contains key) {
+        indexMap(key)
+    }
+    else {
+        ("null", "null")
+    }
   }
 }

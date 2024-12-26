@@ -10,7 +10,7 @@ def initRepo(directoryPath: String): Either[Throwable, String] = {
         }
 
         val wegitPath = path.resolve(".wegit")
-        if (!Files.exists(wegitPath)) {
+        if (!checkIfRepo(directoryPath)) {
           Files.createDirectory(wegitPath) 
           val objects = path.resolve(".wegit/objs")
           Files.createDirectory(objects) 
@@ -23,4 +23,10 @@ def initRepo(directoryPath: String): Either[Throwable, String] = {
       } catch {
         case e: Throwable => Left(e) // Return the error if there was one
     }
+}
+
+def checkIfRepo(directoryPath: String): Boolean = {
+  val path = Paths.get(directoryPath)
+  val wegitPath = path.resolve(".wegit")
+  Files.exists(wegitPath)
 }
