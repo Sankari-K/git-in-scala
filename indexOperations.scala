@@ -10,7 +10,7 @@ class Index(private val filePath: String) {
   var indexMap: Map[String, (String, String)] = Map()
 
   // Load the index into the data structure
-  def readFromFile(): Unit = {
+  def readFromIndex(): Unit = {
     val source = Source.fromFile(filePath)
     try {
       indexMap = source.getLines().foldLeft(Map.empty[String, (String, String)]) { (acc, line) =>
@@ -30,7 +30,7 @@ class Index(private val filePath: String) {
   }
 
   // Method to write the index data structure back to a file
-  def writeToFile(): Unit = {
+  def writeToIndex(): Unit = {
     val writer = new PrintWriter(new File(filePath))
     // val writer = new BufferedWriter(new FileWriter(filePath))
     try {
@@ -47,11 +47,11 @@ class Index(private val filePath: String) {
 
   def updateIndex(key: String, value: (String, String)): Unit = {
     indexMap = indexMap + (key -> value)
-    writeToFile()
+    writeToIndex()
   }
 
   def removeFromIndex(key: String): Unit = {
     indexMap = indexMap - key
-    writeToFile()
+    writeToIndex()
   }
 }
