@@ -32,10 +32,15 @@ import java.nio.file.{Files, Path, Paths}
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
         commitFiles(currentDir, message)
 
+        case "status" :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        getStatus(currentDir)
+
         case _ =>
         println("Usage:")
         println("  scala run *.scala -- init <directory>")
         println("  scala run *.scala -- add <file>")
         println("  scala run *.scala -- commit <message>")
+        println("  scala run *.scala -- status")
   }
 }

@@ -6,7 +6,6 @@ import scala.collection.mutable
 import java.io.PrintWriter
 import java.nio.file.{Paths, Files, Path}
 
-
 class Index(val filePath: String) {
     // The main index as a Map where keys are strings and values are (old, new) tuples of SHA hashes
     var indexMap: Map[String, (String, String)] = Map()
@@ -71,6 +70,7 @@ class Index(val filePath: String) {
     }
 
     def getValueFromIndex(key: String): (String, String) = {
+        // use only for ADDING a file, cause EMPTY_HASH means the file content is empty, null means doesn't exist
         if (indexMap contains key) {
             indexMap(key)
         }

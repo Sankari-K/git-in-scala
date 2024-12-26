@@ -17,7 +17,7 @@ def addFiles(currentDir: String, files: List[String]): Unit = {
             println(s"add file to repository: $file")
             
             // add file to index
-            var (oldhash, newhash) = index.getValueFromIndex(file)
+            var (oldhash, _) = index.getValueFromIndex(file)
             index.updateIndex(file, (oldhash, computeFileHash(file)))
 
             // add to objs
