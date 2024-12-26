@@ -36,11 +36,26 @@ import java.nio.file.{Files, Path, Paths}
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
         getStatus(currentDir)
 
+        case "log" :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        getLog(currentDir)
+
+        case "restore" :: files =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        restoreFiles(currentDir, files)
+
+        case "restore--staged" :: files =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        restoreStagedFiles(currentDir, files)
+
         case _ =>
         println("Usage:")
         println("  scala run *.scala -- init <directory>")
         println("  scala run *.scala -- add <file>")
         println("  scala run *.scala -- commit <message>")
         println("  scala run *.scala -- status")
+        println("  scala run *.scala -- log")
+        println("  scala run *.scala -- restore <files>")
+        println("  scala run *.scala -- restore--staged <files>")
   }
 }

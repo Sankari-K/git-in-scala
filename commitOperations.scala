@@ -49,9 +49,7 @@ class Commit(val filePath: String) {
         exportCommits(getCommitPath().toString())
     }
 
-    def listCommits(): List[String] = {
-        commits.keys.toList
-    }
+    def listCommits: mutable.Map[String, (String, Index)] = commits
 
     def hasCommit(hash: String): Boolean = {
         commits.contains(hash)
