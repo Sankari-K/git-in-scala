@@ -8,7 +8,7 @@ import java.security.MessageDigest
 
 class Commit(val filePath: String) {
     // The dictionary to store commit hashes and their corresponding Index objects
-    val commits: mutable.Map[String, Index] = mutable.Map()
+    val commits: mutable.Map[String, (String, Index)] = mutable.Map()
     
     def getCommitPath(): Path = {
         val path = Paths.get(filePath).toAbsolutePath()
@@ -33,18 +33,18 @@ class Commit(val filePath: String) {
         hashBytes.map("%02x".format(_)).mkString
     }
 
-    def addCommit(hash: String, index: Index): Unit = {
-        commits(hash) = index
+    def addCommit(hash: String, index: Index, message: String): Unit = {
+        commits(hash) = (message, index)
         exportCommits(getCommitPath().toString())
     }
 
-    def getCommit(hash: String): Option[Index] = {
+    def getCommit(hash: String): Option[(String, Index)] = {
         if (hasCommit(hash)) commits.get(hash)
         else None
     }
 
     // Remove a commit by its hash TODO: find the use for it
-    def removeCommit(hash: String): Unit = {
+    def removeCommit(hash: String, message: String): Unit = {
         if (hasCommit(hash)) commits.remove(hash)
         exportCommits(getCommitPath().toString())
     }
@@ -60,9 +60,10 @@ class Commit(val filePath: String) {
     def exportCommits(filePath: String): Unit = {
         val writer = new PrintWriter(new File(filePath))
         try {
-            for ((hash, index) <- commits) {
+            for ((hash, (message, index)) <- commits) {
                 val commitIndex = index.getIndex
                 writer.write(s"[$hash]\n")
+                writer.write(s"$message\n")
                 for ((file, (oldHash, newHash)) <- commitIndex) {
                     writer.write(s"$file=$oldHash,$newHash\n")
                 }
@@ -85,6 +86,8 @@ class Commit(val filePath: String) {
                 val index = new Index(filePath + "/../INDEX")
                 val indexData = scala.collection.mutable.Map.empty[String, (String, String)]
                 fileLine = fileLine + 1
+                val message = source(fileLine)
+                fileLine = fileLine + 1
 
                 while (source(fileLine) != "") {
                     val parts = source(fileLine).split("=").map(_.trim)
@@ -94,7 +97,7 @@ class Commit(val filePath: String) {
                     indexData += (file -> (hashes(0), hashes(1)))
                     }
                     index.indexMap = indexData.toMap
-                    commits(hash) = index
+                    commits(hash) = (message, index)
                     fileLine = fileLine + 1
                 }
             }

@@ -13,8 +13,11 @@ def commitFiles(currentDir: String, message: String): Unit = {
     
      // make a screenshot of the current index in the COMMIT file
     commit.initializeCommit()
-    commit.addCommit(commit.getCommitHash(index), index)
-    println(commit.commits)
+
+    var commitHash = commit.getCommitHash(index)
+    if (!commit.hasCommit(commitHash)) {
+        commit.addCommit(commitHash, index, message)
+    }
 
     // now have to update my index
     for ((key, (oldhash, newhash)) <- index.getIndex) {
