@@ -46,7 +46,7 @@ def getStatus(currentDir: String): Unit = {
     for (file <- existingFiles) {
         // file is not in INDEX
         if (!(index.getIndex contains file)) {
-            println(Console.BLUE + file)
+            println("\t" + Console.BLUE + file)
         }
     }
     println(Console.WHITE)

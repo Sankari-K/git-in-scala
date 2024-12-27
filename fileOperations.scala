@@ -14,17 +14,30 @@ def computeFileHash(filePath: String, algorithm: String = "SHA-256"): String = {
 }
 
 def listFilesInDirectory(directory: Path): Either[Throwable, List[String]] = {
-    try {
-      val fileList = Files.walk(directory).toScala(Seq) 
-        .filter(Files.isRegularFile(_))
-        .map(path => directory.relativize(path).toString) 
-        .toList
+  try {
+    val fileList = Files.walk(directory).toScala(Seq)
+      .filter(path => Files.isRegularFile(path) && !path.toString.contains(".wegit"))
+      .map(path => directory.relativize(path).toString)
+      .toList
 
-        Right(fileList)
-    } catch {
-        case e: Throwable => Left(e) 
-    }
+    Right(fileList)
+  } catch {
+    case e: Throwable => Left(e)
+  }
 }
+
+// def listFilesInDirectory(directory: Path): Either[Throwable, List[String]] = {
+//     try {
+//       val fileList = Files.walk(directory).toScala(Seq) 
+//         .filter(Files.isRegularFile(_))
+//         .map(path => directory.relativize(path).toString) 
+//         .toList
+
+//         Right(fileList)
+//     } catch {
+//         case e: Throwable => Left(e) 
+//     }
+// }
 
 def addCompressedFile(inputFilePath: String, outputFilePath: String): Either[Throwable, Unit] = {
    try {

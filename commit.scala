@@ -19,7 +19,6 @@ def commitFiles(currentDir: String, message: String): Unit = {
         commit.addCommit(commitHash, index, message)
     }
 
-    // now have to update my index
     for ((key, (_, newhash)) <- index.getIndex) {
         index.updateIndex(key, (newhash, newhash))
     }
