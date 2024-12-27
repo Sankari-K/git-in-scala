@@ -1,0 +1,22 @@
+1.1 Make an executable (DONE)
+1.2 Make sure executable can be run from anywhere
+
+2. Add must be able to take in 
+   2.1 current directory ("." or no params) 
+   2.2 any directory (relative or absolute)
+   2.3 multiple files (DONE)
+
+3. In general, wegit must run inside any (nested) part of the repo
+4. Implement .gitignore
+5. Move the prints to a separate module (a log/message/error handler)
+6. Implement git delete (and make sure status captures it)
+7. Add parameters like author, timestamp for a git commit
+8. Go through modules made and delete unnecessary helper functions
+
+9.1 Implement all of git checkout
+9.2 Create a HEAD file
+
+10. Create a git commit--amend command
+11. Create docstrings and pull 'em in for the help/usage command
+
+12. Document the system design, modules, usage, and installation on mkdocs
