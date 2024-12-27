@@ -11,17 +11,17 @@ def getStatus(currentDir: String): Unit = {
     println("use \"restore -- staged\" to unstage")
     for ((filepath, (oldhash, newhash)) <- index.getIndex) {
         if (oldhash == "null") {
-            println(Console.GREEN + "new file: " + filepath)
+            println("\t" + Console.GREEN + "new file: " + filepath)
         }
     }
     for ((filepath, (oldhash, newhash)) <- index.getIndex) {
         if (oldhash != newhash & oldhash != "null") {
-            println(Console.RED + "modified: " + filepath)
+            println("\t" + Console.RED + "modified: " + filepath)
         }
     }
     for ((filepath, (oldhash, newhash)) <- index.getIndex) {
         if (newhash == "null") {
-            println(Console.YELLOW + "deleted file: " + filepath)
+            println("\t" + Console.YELLOW + "deleted file: " + filepath)
         }
     }
     println()
@@ -34,7 +34,7 @@ def getStatus(currentDir: String): Unit = {
         if (index.getIndex contains file) {
             var (oldhash, newhash) = index.getIndex(file)
             if (newhash != computeFileHash(file)) {
-                println(Console.RED + "modified: " + file)
+                println("\t" + Console.RED + "modified: " + file)
             }
         }
     }

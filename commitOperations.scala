@@ -12,7 +12,7 @@ class Commit(val filePath: String) {
     
     def getCommitPath(): Path = {
         val path = Paths.get(filePath).toAbsolutePath()
-        return path.resolve("COMMIT")
+        return path.resolve(".wegit").resolve("COMMIT")
     }
 
     def initializeCommit(): Unit = {
@@ -50,7 +50,7 @@ class Commit(val filePath: String) {
     }
 
     def listCommits: mutable.Map[String, (String, Index)] = commits
-
+    
     def hasCommit(hash: String): Boolean = {
         commits.contains(hash)
     }

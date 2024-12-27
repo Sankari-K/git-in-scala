@@ -13,7 +13,6 @@ def restoreFiles(currentDir: String, files: List[String]): Unit = {
             val path = Paths.get(currentDir)
             var objspath = path.resolve(".wegit").resolve("objs").resolve(newhash)
 
-            println(file + "   " + objspath)
             addDecompressedFile(objspath.toString(), file)
         }
     }

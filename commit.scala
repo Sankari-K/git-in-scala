@@ -26,3 +26,9 @@ def commitFiles(currentDir: String, message: String): Unit = {
 
     println(s"[main $commitHash] $message")
 }
+
+// def ammendCommit(currentDir: String, message: String): Unit = {
+//     var commit = new Commit(currentDir)
+//     commit.initializeCommit()
+//     println(commit.listCommits)
+// }

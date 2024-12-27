@@ -12,7 +12,7 @@ class Index(val filePath: String) {
 
     def getIndexPath(): Path = {
         val path = Paths.get(filePath).toAbsolutePath()
-        return path.resolve("INDEX")
+        return path.resolve(".wegit").resolve("INDEX")
     }
 
     def initializeIndex(): Unit = {
