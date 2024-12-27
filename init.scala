@@ -20,10 +20,10 @@ def initRepo(directoryPath: String): Either[Throwable, String] = {
     }
 }
 
-def checkIfRepo(directoryPath: String, errorMessage: String, isInitFlag: Boolean): Unit = {
+def checkIfRepo(directoryPath: String, errorMessage: String, negation: Boolean): Unit = {
     val path = Paths.get(directoryPath)
     val wegitPath = path.resolve(".wegit")
-    if (Files.exists(wegitPath) == isInitFlag) {
+    if (Files.exists(wegitPath) == negation) {
         println(errorMessage)
         sys.exit(1)
     }

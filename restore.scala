@@ -15,14 +15,8 @@ def restoreFiles(currentDir: String, files: List[String]): Unit = {
 
             println(file + "   " + objspath)
             addDecompressedFile(objspath.toString(), file)
-
         }
     }
-    // for ((filepath, (oldhash, newhash)) <- index.getIndex) {
-    //     println(filepath + "|" + oldhash + "|" + newhash)
-    // }
-
-    println("hello")
 }
 
 def restoreStagedFiles(currentDir: String, files: List[String]): Unit = {
