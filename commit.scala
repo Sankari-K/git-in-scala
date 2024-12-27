@@ -23,4 +23,6 @@ def commitFiles(currentDir: String, message: String): Unit = {
     for ((key, (_, newhash)) <- index.getIndex) {
         index.updateIndex(key, (newhash, newhash))
     }
+
+    println(s"[main $commitHash] $message")
 }
