@@ -1,3 +1,5 @@
+package gitcommands
+
 import datastructs.*
 
 def commitFiles(currentDir: String, message: String): Unit = {
@@ -20,7 +22,12 @@ def commitFiles(currentDir: String, message: String): Unit = {
     }
 
     for ((key, (_, newhash)) <- index.getIndex) {
-        index.updateIndex(key, (newhash, newhash))
+        if (newhash == "null") { // skip adding the deleted files to index
+            index.removeFromIndex(key)
+        }
+        else {
+            index.updateIndex(key, (newhash, newhash))
+        }
     }
 
     println(s"[main $commitHash] $message")

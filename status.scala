@@ -1,3 +1,5 @@
+package gitcommands
+
 import datastructs.* 
 import fileops.*
 import java.nio.file.{Paths}
@@ -7,15 +9,15 @@ def getStatus(currentDir: String): Unit = {
     val index = new Index(currentDir)
     index.initializeIndex()
 
-    println(Console.WHITE + "changes to be committed: \n")
-    println("use \"restore -- staged\" to unstage")
+    println(Console.WHITE + "changes to be committed: ")
+    println("\t(use \"restore -- staged\" to unstage)")
     for ((filepath, (oldhash, newhash)) <- index.getIndex) {
-        if (oldhash == "null") {
+        if (oldhash == "null" & newhash != "null") {
             println("\t" + Console.GREEN + "new file: " + filepath)
         }
     }
     for ((filepath, (oldhash, newhash)) <- index.getIndex) {
-        if (oldhash != newhash & oldhash != "null") {
+        if (oldhash != newhash & oldhash != "null" & newhash != "null") {
             println("\t" + Console.RED + "modified: " + filepath)
         }
     }
@@ -26,9 +28,9 @@ def getStatus(currentDir: String): Unit = {
     }
     println()
 
-    println(Console.WHITE + "changes not staged for commit: \n")
-    println("use \"add\" to update what will be committed")
-    println("use \"restore\" to discard changes in working directory")
+    println(Console.WHITE + "changes not staged for commit: ")
+    println("\t(use \"add\" to update what will be committed)")
+    println("\t(use \"restore\" to discard changes in working directory)")
     var existingFiles = listFilesInDirectory(Paths.get(currentDir)).getOrElse(List[String]())
     for (file <- existingFiles) {
         if (index.getIndex contains file) {
@@ -41,8 +43,8 @@ def getStatus(currentDir: String): Unit = {
     println()
 
 
-    println(Console.WHITE + "untracked files: \n")
-    println("use \"add\" to include in what will be committed")
+    println(Console.WHITE + "untracked files: ")
+    println("\t(use \"add\" to include in what will be committed)")
     for (file <- existingFiles) {
         // file is not in INDEX
         if (!(index.getIndex contains file)) {

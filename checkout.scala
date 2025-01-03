@@ -1,3 +1,5 @@
+package gitcommands
+
 import datastructs.*
 import fileops.* 
 import java.nio.file.{Files, Paths}

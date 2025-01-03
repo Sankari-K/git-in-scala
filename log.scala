@@ -1,3 +1,5 @@
+package gitcommands
+
 import datastructs.*
 
 def getLog(currentDir: String): Unit = {
