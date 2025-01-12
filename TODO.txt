@@ -20,3 +20,8 @@
 11. Create docstrings and pull 'em in for the help/usage command
 
 12. Document the system design, modules, usage, and installation on mkdocs
+
+13. Debug this sitation - a commit has been made, but no changes in the INDEX. 
+    Currently, the commit message and hash are created (but aren't being modified in the INDEX).
+
+14. Optimize the "changes not staged for commit" functionaity in git status. There's no need to iterate over all files in the repository.
