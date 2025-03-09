@@ -78,6 +78,7 @@ import java.nio.file.{Files, Path, Paths}
         println("  scala run *.scala -- restore--staged <files>")
         println("  scala run *.scala -- checkout <hash>")
         println("  scala run *.scala -- rm <file>")
+        println("  scala run *.scala -- config <key> <value>")
         println("  scala run *.scala -- pls-work")
   }
 }

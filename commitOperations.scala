@@ -6,10 +6,12 @@ import java.nio.file.{Paths, Path, Files}
 import scala.collection.mutable
 import java.security.MessageDigest
 import gitcommands.*
+import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime
 
 class Commit(val filePath: String) {
     // The dictionary to store commit hashes and their corresponding Index objects
-    val commits: mutable.Map[String, (String, String, Index)] = mutable.Map()
+    val commits: mutable.Map[String, (String, String, String, Index)] = mutable.Map()
     
     def getCommitPath(): Path = {
         val path = Paths.get(filePath).toAbsolutePath()
@@ -35,11 +37,11 @@ class Commit(val filePath: String) {
     }
 
     def addCommit(hash: String, index: Index, message: String): Unit = {
-        commits(hash) = (message, getConfig(filePath, "username"), index)
+        commits(hash) = (message, getConfig(filePath, "username"), getTimeStamp(), index)
         exportCommits(getCommitPath().toString())
     }
 
-    def getCommit(hash: String): Option[(String, String, Index)] = {
+    def getCommit(hash: String): Option[(String, String, String, Index)] = {
         if (hasCommit(hash)) commits.get(hash)
         else None
     }
@@ -50,7 +52,7 @@ class Commit(val filePath: String) {
         exportCommits(getCommitPath().toString())
     }
 
-    def listCommits: mutable.Map[String, (String, String, Index)] = commits
+    def listCommits: mutable.Map[String, (String, String, String, Index)] = commits
     
     def hasCommit(hash: String): Boolean = {
         commits.contains(hash)
@@ -59,11 +61,12 @@ class Commit(val filePath: String) {
     def exportCommits(filePath: String): Unit = {
         val writer = new PrintWriter(new File(filePath))
         try {
-            for ((hash, (message, author, index)) <- commits) {
+            for ((hash, (message, author, timestamp, index)) <- commits) {
                 val commitIndex = index.getIndex
                 writer.write(s"[$hash]\n")
                 writer.write(s"$message\n")
                 writer.write(s"$author\n")
+                writer.write(s"$timestamp\n")
                 for ((file, (oldHash, newHash)) <- commitIndex) {
                     writer.write(s"$file=$oldHash,$newHash\n")
                 }
@@ -90,6 +93,8 @@ class Commit(val filePath: String) {
                 fileLine = fileLine + 1
                 val author = source(fileLine)
                 fileLine = fileLine + 1
+                val timestamp = source(fileLine)
+                fileLine = fileLine + 1
 
                 while (source(fileLine) != "") {
                     val parts = source(fileLine).split("=").map(_.trim)
@@ -99,11 +104,25 @@ class Commit(val filePath: String) {
                         indexData += (file -> (hashes(0), hashes(1)))
                     }
                     index.indexMap = indexData.toMap
-                    commits(hash) = (message, author, index)
+                    commits(hash) = (message, author, timestamp, index)
                     fileLine = fileLine + 1
                 }
             }
             fileLine = fileLine + 1
-      }
+        }
+    }
+
+    def getTimeStamp(): String = {
+        val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+        val currentDateTime: LocalDateTime = LocalDateTime.now()
+
+        val day = currentDateTime.getDayOfWeek().toString().toLowerCase()
+        val month = currentDateTime.getMonth().toString().toLowerCase()
+        val date = currentDateTime.getDayOfMonth()
+        val time = timeFormatter.format(currentDateTime)
+        val year = currentDateTime.getYear()
+        val timezone = "+0530"
+
+        return s"$day $month $date $time $year $timezone" 
     }
 }
