@@ -40,7 +40,7 @@ def checkoutCommit(currentDir: String, commitHash: String): Unit = {
     commit.getCommit(commitHash) match
         case Some(i) => {
             val newIndex = new Index(currentDir)
-            val (message, author, timestamp, tempIndex) = i
+            val (message, author, email, timestamp, tempIndex) = i
             newIndex.indexMap = tempIndex.indexMap
 
             newIndex.writeToIndex()
