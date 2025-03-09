@@ -63,6 +63,9 @@ import java.nio.file.{Files, Path, Paths}
         case "pls-work" :: Nil =>
         plsWork()
 
+        case "config" :: attribute :: value =>
+        setConfig(currentDir, attribute, value)
+
         case _ =>
         println("Usage:")
         println("  scala run *.scala -- init <directory>")

@@ -17,8 +17,12 @@ def commitFiles(currentDir: String, message: String): Unit = {
     commit.initializeCommit()
 
     var commitHash = commit.getCommitHash(index)
-    if (!commit.hasCommit(commitHash)) {
+    if (stagedChangesPresent(currentDir, commit, index)) {
         commit.addCommit(commitHash, index, message)
+    }
+    else {
+        println("error: there are no staged changes to commit")
+        sys.exit(1)
     }
 
     for ((key, (_, newhash)) <- index.getIndex) {
@@ -38,3 +42,20 @@ def commitFiles(currentDir: String, message: String): Unit = {
 //     commit.initializeCommit()
 //     println(commit.listCommits)
 // }
+
+def stagedChangesPresent(currentDir: String, commit: Commit, index: Index): Boolean = {
+    var commitHash = commit.getCommitHash(index)
+
+    if (commit.hasCommit(commitHash)) {
+        return false;
+    }
+
+    var filesModified = false
+
+    for ((filepath, (oldhash, newhash)) <- index.getIndex) {
+        if (oldhash != newhash) {
+            filesModified = true
+        }
+    }
+    return filesModified
+}

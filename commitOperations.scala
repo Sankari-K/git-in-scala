@@ -5,10 +5,11 @@ import java.io.{BufferedWriter, FileWriter, PrintWriter, File}
 import java.nio.file.{Paths, Path, Files}
 import scala.collection.mutable
 import java.security.MessageDigest
+import gitcommands.*
 
 class Commit(val filePath: String) {
     // The dictionary to store commit hashes and their corresponding Index objects
-    val commits: mutable.Map[String, (String, Index)] = mutable.Map()
+    val commits: mutable.Map[String, (String, String, Index)] = mutable.Map()
     
     def getCommitPath(): Path = {
         val path = Paths.get(filePath).toAbsolutePath()
@@ -34,11 +35,11 @@ class Commit(val filePath: String) {
     }
 
     def addCommit(hash: String, index: Index, message: String): Unit = {
-        commits(hash) = (message, index)
+        commits(hash) = (message, getConfig(filePath, "username"), index)
         exportCommits(getCommitPath().toString())
     }
 
-    def getCommit(hash: String): Option[(String, Index)] = {
+    def getCommit(hash: String): Option[(String, String, Index)] = {
         if (hasCommit(hash)) commits.get(hash)
         else None
     }
@@ -49,7 +50,7 @@ class Commit(val filePath: String) {
         exportCommits(getCommitPath().toString())
     }
 
-    def listCommits: mutable.Map[String, (String, Index)] = commits
+    def listCommits: mutable.Map[String, (String, String, Index)] = commits
     
     def hasCommit(hash: String): Boolean = {
         commits.contains(hash)
@@ -58,10 +59,11 @@ class Commit(val filePath: String) {
     def exportCommits(filePath: String): Unit = {
         val writer = new PrintWriter(new File(filePath))
         try {
-            for ((hash, (message, index)) <- commits) {
+            for ((hash, (message, author, index)) <- commits) {
                 val commitIndex = index.getIndex
                 writer.write(s"[$hash]\n")
                 writer.write(s"$message\n")
+                writer.write(s"$author\n")
                 for ((file, (oldHash, newHash)) <- commitIndex) {
                     writer.write(s"$file=$oldHash,$newHash\n")
                 }
@@ -86,16 +88,18 @@ class Commit(val filePath: String) {
                 fileLine = fileLine + 1
                 val message = source(fileLine)
                 fileLine = fileLine + 1
+                val author = source(fileLine)
+                fileLine = fileLine + 1
 
                 while (source(fileLine) != "") {
                     val parts = source(fileLine).split("=").map(_.trim)
                     if (parts.length == 2) {
-                    val file = parts(0)
-                    val hashes = parts(1).split(",").map(_.trim)
-                    indexData += (file -> (hashes(0), hashes(1)))
+                        val file = parts(0)
+                        val hashes = parts(1).split(",").map(_.trim)
+                        indexData += (file -> (hashes(0), hashes(1)))
                     }
                     index.indexMap = indexData.toMap
-                    commits(hash) = (message, index)
+                    commits(hash) = (message, author, index)
                     fileLine = fileLine + 1
                 }
             }
