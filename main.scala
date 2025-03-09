@@ -60,11 +60,11 @@ import java.nio.file.{Files, Path, Paths}
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
         removeFile(currentDir, files)
 
-        case "pls-work" :: Nil =>
-        plsWork()
-
         case "config" :: attribute :: value =>
         setConfig(currentDir, attribute, value)
+
+        case "pls-work" :: Nil =>
+        plsWork()
 
         case _ =>
         println("Usage:")

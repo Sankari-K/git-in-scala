@@ -31,20 +31,16 @@ def getStatus(currentDir: String): Unit = {
     println(Console.WHITE + "changes not staged for commit: ")
     println("\t(use \"add\" to update what will be committed)")
     println("\t(use \"restore\" to discard changes in working directory)")
-    var existingFiles = listFilesInDirectory(Paths.get(currentDir)).getOrElse(List[String]())
-    for (file <- existingFiles) {
-        if (index.getIndex contains file) {
-            var (oldhash, newhash) = index.getIndex(file)
-            if (newhash != computeFileHash(file)) {
-                println("\t" + Console.RED + "modified: " + file)
-            }
+    for ((file, (oldhash, newhash)) <- index.getIndex) {
+        if (newhash != computeFileHash(file)) {
+            println("\t" + Console.RED + "modified: " + file)
         }
     }
     println()
 
-
     println(Console.WHITE + "untracked files: ")
     println("\t(use \"add\" to include in what will be committed)")
+    var existingFiles = listFilesInDirectory(Paths.get(currentDir)).getOrElse(List[String]())
     for (file <- existingFiles) {
         // file is not in INDEX
         if (!(index.getIndex contains file)) {
