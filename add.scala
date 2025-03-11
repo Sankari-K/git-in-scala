@@ -16,7 +16,10 @@ def addFiles(currentDir: String, files: List[String]): Unit = {
     val path = Paths.get(currentDir)
 
     val index = new Index(currentDir)
-    index.initializeIndex()
+
+    if (files.exists(existingFiles contains _)) {
+        index.initializeIndex()
+    }
     
     for (file <- files) {
         if (existingFiles contains file) {
