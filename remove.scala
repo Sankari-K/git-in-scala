@@ -7,7 +7,6 @@ def removeFile(currentDir: String, files: List[String]): Unit = {
     val index = new Index(currentDir)
     index.initializeIndex()
 
-    index.initializeIndex()
     for (file <- files) {
         if (index.getIndex contains file) {
             var (oldhash, newhash) = index.getIndex(file)
