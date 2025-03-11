@@ -6,12 +6,14 @@ def commitFiles(currentDir: String, message: String): Unit = {
     var commit = new Commit(currentDir)
     var index = new Index(currentDir)
 
-    index.initializeIndex()
-
-    if (index.indexMap == Map()) {
-        println("wegit expects an INDEX file to exist. please do an add before committing.")
-        return
+    if (!index.isIndexInitialized()) {
+        println("on branch master\n")
+        println("no commits yet\n")
+        println("nothing to commit (create/copy files and use 'git add' to track)\n")
+        sys.exit(1)
     }
+
+    index.initializeIndex()
     
      // make a screenshot of the current index in the COMMIT file
     commit.initializeCommit()
