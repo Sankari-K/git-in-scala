@@ -15,10 +15,14 @@ class Index(val filePath: String) {
         return path.resolve(".wegit").resolve("INDEX")
     }
 
+    def isIndexInitialized(): Boolean = {
+        return Files.exists((getIndexPath()))
+    }
+
     def initializeIndex(): Unit = {
         val indexPath = getIndexPath()
         if (!Files.exists(indexPath)) {
-        Files.createFile(indexPath)
+            Files.createFile(indexPath)
         }
         readFromIndex(indexPath.toString())
     }
