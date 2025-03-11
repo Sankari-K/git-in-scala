@@ -6,6 +6,12 @@ import java.nio.file.{Paths}
 import javax.net.ssl.TrustManager
 
 def addFiles(currentDir: String, files: List[String]): Unit = {
+
+    if (files.isEmpty) {
+        println("nothing specified, nothing added.")
+        return
+    }
+    
     var existingFiles = listFilesInDirectory(Paths.get(currentDir)).getOrElse(List[String]())
     val path = Paths.get(currentDir)
 
