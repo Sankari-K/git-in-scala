@@ -7,13 +7,6 @@ import scala.collection.immutable.Stream.Cons
 
 def getStatus(currentDir: String): Unit = {
     val index = new Index(currentDir)
-
-    if (!index.isIndexInitialized()) {
-        println("on branch master\n")
-        println("no commits yet\n")
-        println("nothing to commit (create/copy files and use 'git add' to track)\n")
-        sys.exit(1)
-    }
     
     index.initializeIndex()
 
