@@ -6,6 +6,7 @@ import scala.util.Using
 import scala.jdk.StreamConverters._
 import java.util.zip.{DeflaterOutputStream, InflaterInputStream}
 import java.io.{FileOutputStream, FileInputStream}
+import gitcommands.*
 
 def computeFileHash(filePath: String, algorithm: String = "SHA-256"): String = {
     val bytes = Files.readAllBytes(Paths.get(filePath)) 
@@ -15,10 +16,12 @@ def computeFileHash(filePath: String, algorithm: String = "SHA-256"): String = {
 
 def listFilesInDirectory(directory: Path): Either[Throwable, List[String]] = {
   try {
-    val fileList = Files.walk(directory).toScala(Seq)
+    var fileList = Files.walk(directory).toScala(Seq)
       .filter(path => Files.isRegularFile(path) && !path.toString.contains(".wegit"))
       .map(path => directory.relativize(path).toString)
       .toList
+
+    fileList = fileList.filter(path => !getIgnoredFiles(directory.toString()).contains(path))
 
     Right(fileList)
   } catch {

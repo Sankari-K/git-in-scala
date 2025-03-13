@@ -33,6 +33,9 @@ def addFiles(currentDir: String, files: List[String]): Unit = {
             var objspath = path.resolve(".wegit").resolve("objs").resolve(computeFileHash(file))
             addCompressedFile(file, objspath.toString())
         }
+        else if (getIgnoredFiles(currentDir) contains file) {
+            println(s"the following paths are ignored by one of your .ignore files: ${file}")
+        }
         else {
             println(s"fatal: pathspec $file did not match any files")
         }
