@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 
 class Commit(val filePath: String) {
     // The dictionary to store commit hashes and their corresponding Index objects
-    val commits: mutable.Map[String, (String, String, String, String, Index)] = mutable.Map()
+    val commits: mutable.LinkedHashMap[String, (String, String, String, String, Index)] = mutable.LinkedHashMap()
     
     def getCommitPath(): Path = {
         val path = Paths.get(filePath).toAbsolutePath()
