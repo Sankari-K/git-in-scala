@@ -15,7 +15,7 @@ def commitFiles(currentDir: String, message: String): Unit = {
 
     index.initializeIndex()
     
-     // make a screenshot of the current index in the COMMIT file
+    // make a screenshot of the current index in the COMMIT file
     commit.initializeCommit()
 
     var commitHash = commit.getCommitHash(index)
@@ -39,11 +39,19 @@ def commitFiles(currentDir: String, message: String): Unit = {
     println(s"[main $commitHash] $message")
 }
 
-// def ammendCommit(currentDir: String, message: String): Unit = {
-//     var commit = new Commit(currentDir)
-//     commit.initializeCommit()
-//     println(commit.listCommits)
-// }
+def ammendCommit(currentDir: String, message: String): Unit = {
+    var commit = new Commit(currentDir)
+    commit.initializeCommit()
+
+    try {
+        var (lastCommitHash, lastCommitValue) = commit.listCommits.last
+        var (_, _, _, _, index) = lastCommitValue
+        commit.addCommit(lastCommitHash, index, message)
+    }
+    catch {
+        case _: Exception => println("fatal: You have nothing to amend.")
+    }
+}
 
 def stagedChangesPresent(currentDir: String, commit: Commit, index: Index): Boolean = {
     var commitHash = commit.getCommitHash(index)

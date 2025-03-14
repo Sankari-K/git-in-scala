@@ -32,9 +32,9 @@ import java.nio.file.{Files, Path, Paths}
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
         commitFiles(currentDir, message)
 
-        // case "commit--amend" :: message :: Nil =>
-        // checkIfRepo(currentDir, "fatal: not a wegit repository", false)
-        // ammendCommit(currentDir, message)
+        case "commit--amend" :: message :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        ammendCommit(currentDir, message)
 
         case "status" :: Nil =>
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
