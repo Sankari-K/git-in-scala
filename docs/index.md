@@ -10,8 +10,9 @@ This project is a personal implementation of Git, the popular version control sy
 * `init <directory>` - Creates a new git repository. [(git man page)](https://git-scm.com/docs/git-init)
 * `add <files>` - Adds a file to the staging area. [(git man page)](https://git-scm.com/docs/git-add)
 * `commit <message>` - Record changes to the repository. [(git man page)](https://git-scm.com/docs/git-commit)
-* `amend--message` - Changes commmit message of latest commit [(git man page)](https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things)
-* `amend--commit` - Add additional staged changes to the commit [(git man page)](https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things)
+* `amend--message` - Changes commmit message of latest commit [similar to (git man page)](https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things)
+* `amend--commit` - Add additional staged changes to the commit [similar to (git man page)](https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things)
+* `squash` - Merges multiple commits into one to keep the repo clean [(git man page)](https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History.html#_rewriting_history)
 * `status` - Show the working tree status of the repository. [(git man page)](https://git-scm.com/docs/git-status)
 * `log` - Show all commits made. [(git man page)](https://git-scm.com/docs/git-log)
 * `restore <files>` - Restore working tree files. [(git man page)](https://git-scm.com/docs/git-restore)
@@ -175,6 +176,15 @@ One case to be considered - if the file was deleted as part of the previous comm
 
 The latest commit is removed, and a new commit hash is generated based on the updated `INDEX`. Depending on whether a message was provided or not, the given message or the previous message is taken to create a commit. After the commit, the `INDEX` is updated like the commit section earlier.
 
+## Keeping commits clean: squash
+
+Multiple commits can be merged into one to keep the repo history clean and succint. This is done by taking the last `n` commits (`n` given by the user) and merging two at a time much like the previous commit and the `INDEX` was merged for `amend-commit`. The only difference here is that:
+
+* No changes are actually made to the current `INDEX`
+* All the `n` commits are deleted, and replaced by a new commit with a new commit hash and message.
+
+If `n` is greater than the number of commits present in the repository, an appropriate error message is shown. 
+
 ## Checking the state of the repository: status
 
 ### Changes to be committed
@@ -262,8 +272,7 @@ There are quite a few things I'd like to build upon. This section keeps track of
 
     * Create a `HEAD` file (to implement the logic for "detached head")
 
-- Create a git commit--amend command
+- Create a git commit--amend command **[DONE]**
 - Create docstrings and pull 'em in for the help/usage command
-- Document the system design, modules, usage, and installation on mkdocs
 - Debug this situation - a commit has been made, but no changes in the `INDEX`. Currently, the commit message and hash are created (but aren't being modified in the `INDEX`). **[DONE]**
 - Optimize the "changes not staged for commit" functionality in git status. There's no need to iterate over all files in the repository. **[DONE]**

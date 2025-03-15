@@ -86,6 +86,7 @@ import java.nio.file.{Files, Path, Paths}
         println("  scala run *.scala -- amend--message <message>")
         println("  scala run *.scala -- amend--commit <message>")
         println("  scala run *.scala -- amend--commit")
+        println("  scala run *.scala -- squash <number of commits> <commit message>")
         println("  scala run *.scala -- status")
         println("  scala run *.scala -- log")
         println("  scala run *.scala -- restore <files>")
