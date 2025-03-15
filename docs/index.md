@@ -10,12 +10,15 @@ This project is a personal implementation of Git, the popular version control sy
 * `init <directory>` - Creates a new git repository. [(git man page)](https://git-scm.com/docs/git-init)
 * `add <files>` - Adds a file to the staging area. [(git man page)](https://git-scm.com/docs/git-add)
 * `commit <message>` - Record changes to the repository. [(git man page)](https://git-scm.com/docs/git-commit)
+* `amend--message` - Changes commmit message of latest commit [(git man page)](https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things)
+* `amend--commit` - Add additional staged changes to the commit [(git man page)](https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things)
 * `status` - Show the working tree status of the repository. [(git man page)](https://git-scm.com/docs/git-status)
 * `log` - Show all commits made. [(git man page)](https://git-scm.com/docs/git-log)
 * `restore <files>` - Restore working tree files. [(git man page)](https://git-scm.com/docs/git-restore)
 * `restore--staged <files>` - Restore content in the index. [(git man page)](https://git-scm.com/docs/git-restore)
 * `checkout <hash>` - Restore working tree files to the given hash. [(git man page)](https://git-scm.com/docs/git-checkout)
 * `rm <files>` - Remove files from the worktree and index. [(git man page)](https://git-scm.com/docs/git-rm)
+* `config <key> <value>` - Sets the `key`'s value to be equal to `value` in git's config file.
 * `pls-work` - A desperate plea to the version control gods. Sometimes, you just need a little extra luck.
 
 ## Project layout
@@ -53,11 +56,14 @@ For example, an index file would look like this:
     3.txt:null:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     egfolder\4.txt:null:e4ec861d34ab491b5b8538ee693c70ccda97e2ac861b8719b0b1d2ffdfe69cd7
 ```
-A commit is just a snapshot of an index file with an additional commit message, and a unique commit hash that is generated. It would look like this:
+A commit is just a snapshot of an index file with an additional commit message, author name and email, a timestamp of the commit, and a unique commit hash that is generated. It would look like this:
 
 ```plaintext
     [da563b40a3e49923b50a173b0cc73c40627a0430]
     Second commit
+    sankari
+    sankarikarthik03@gmail.com
+    sunday march 9 20:47:35 2025 +0530
     1.txt=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855,2860d7deca71859f9fae69da862b3934b772f24d23137f326a030bf042dc8d7d
     2.txt=0051eb1be2439f3db88107f1c8643256d331f3078dc5d51b7c40acfeb03c88b1,0051eb1be2439f3db88107f1c8643256d331f3078dc5d51b7c40acfeb03c88b1
     3.txt=null,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
@@ -65,6 +71,9 @@ A commit is just a snapshot of an index file with an additional commit message, 
 
     [8baedf145e0717cf216d30f5bb75afc643326ab5]
     First commit
+    sankari
+    sankarikarthik03@gmail.com
+    sunday march 9 20:42:27 2025 +0530
     2.txt=null,0051eb1be2439f3db88107f1c8643256d331f3078dc5d51b7c40acfeb03c88b1
     1.txt=null,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 ```
@@ -112,12 +121,61 @@ A `commit` is expected to take a snapshot of the current `INDEX` file and store 
 * So, if there are any changes to the `INDEX`, that guarantees a different commit hash. 
 * No changes to the `INDEX` would lead to the commit hash being the same. This is a nice way to check for changes in the `INDEX`.
 
+### Changes to data structures 
 This operation does two things:
 
 * Makes a commit with the generated commit hash (essentially copies the current contents in the `INDEX` file and makes an entry in the `COMMIT` file).
 * Iterates over the `INDEX` and updates it - both the `oldhash` and the `newhash` are populated with the `newhash` value. Any file with `newhash` as `null` is a deleted file, so it gets removed from the `INDEX`.
 
-## Checking the state of your repository: status
+---
+**NOTE**
+
+> 📣 "No changes to the `INDEX` would lead to the commit hash being the same. This is a nice way to check for changes in the `INDEX`."
+   This is true in principle. However, consider this case:
+   
+```python
+    scala run ./*.scala -- add 1.txt
+    scala run ./*.scala -- commit "Added file"
+    scala run ./*.scala -- commit "Is this possible"
+```
+> Ideally, the second commit should not be possible. But the `commit` operation updates the `oldhash` to be the `newhash`, so the `INDEX` technically changes and a commit would be possible.
+
+> Similarly in this situation:
+```python
+    scala run ./*.scala -- rm 1.txt
+    scala run ./*.scala -- commit "Deleted file"
+    scala run ./*.scala -- commit "Is this possible"
+```
+
+> These cases are taken care of by explicitly checking the `INDEX` for changes before a commit, and not just the hash of the `INDEX` contents.
+
+---
+
+## Rewriting a commit: amend
+
+### Rewriting just the commit message: amend-message
+To just change the commit message of the latest commit, this command can be used. This doesn't change the commit hash, but changes the timestamp of the commit.
+
+### Adding more staged files to the last commit: amend--commit
+This command can be used if a commit is done too early and one possibly forgets to add some files. This is done by fetching the latest commit,
+iterating over the current `INDEX`.
+
+```plaintext
+    for all (file, (oldhash, newhash)) in index:
+        lastoldhash, lastnewhash = previousIndex
+        index.update(file, (lastoldhash, newhash))
+```
+One case to be considered - if the file was deleted as part of the previous commit, there won't be an entry in the current `INDEX` - in that case, the old index must be iterated through to update the `INDEX`.
+
+```plaintext
+    for all (file, (lastoldhash, lastnewhash)) in previousIndex:
+        if file not in index:
+            index.update(file, (lastoldhash, lastnewhash))
+```
+
+The latest commit is removed, and a new commit hash is generated based on the updated `INDEX`. Depending on whether a message was provided or not, the given message or the previous message is taken to create a commit. After the commit, the `INDEX` is updated like the commit section earlier.
+
+## Checking the state of the repository: status
 
 ### Changes to be committed
 
@@ -139,9 +197,47 @@ All files in the repo are iterated over -
 
 * If the file is not present in the `INDEX`, it is an untracked file.
 
+Implementing `git status` was quite straightforward thanks to thorough brainstorming and choosing the right modules and data structures. This taught me the importance of spending time upfront on basic architecture.
+
+
 ## Reading commit history: log
 
 This just iterates through all `commit`s made and prints out each one's hash and message.
+
+## Restoring working tree files: restore
+
+This command deletes working tree changes and restores back the previously staged changes. This is done by getting the `newhash` from the `INDEX` for the given file (latest version that was added), and replacing the current contents of the file with the contents pointed to in the `objs/` directory by the `newhash`.
+
+### Subcommand: restore--staged
+This command unstages local changes by removing the specified file(s) from the `INDEX`.
+
+## Restoring working tree files to a hash: checkout
+
+Before the command is run, it makes sure there are no local changes that haven't been committed. Unmodified changes are checked by:
+
+* Checking the diff between the `INDEX` and current state of files
+* Checking the diff in `INDEX` to check for uncommitted changes.
+
+Then, the current `INDEX` is modified to look like the particular commit referenced by the hash given. If the `commithash` doesn't match any commit, the checkout is aborted. 
+
+## Removing files: rm
+
+This command deletes the specified file and updates that information in the `INDEX` => it stages the "deletion".
+That is done by updating the `newhash` for that file to `null` and deleting the file from the file system.
+
+If there are staged changes in the `INDEX` for that file, the operation is aborted.
+
+## Setting up repository constants: config
+
+This is used to save global variables about the repo, such as the user's name and email (which are used for commit operations).
+
+## Ignore files
+
+To ignore a file, a `.ignore` file can be created in the root directory. A file can't be `add`ed if it is in the `.ignore` file.
+
+## If nothing works: pls-work
+
+(self-explanatory)
 
 ## To do
 
@@ -156,11 +252,11 @@ There are quite a few things I'd like to build upon. This section keeps track of
     * multiple files
 
 - In general, wegit must run inside any (nested) part of the repo
-- Implement .gitignore
+- Implement .gitignore **[DONE]**
 - Move the prints to a separate module (a log/message/error handler)
 - Implement git delete (and make sure status captures it)
-- Add parameters like author, timestamp for a git commit
-- Go through modules made and delete unnecessary helper functions
+- Add parameters like author, timestamp for a git commit **[DONE]**
+- Go through modules made and delete unnecessary helper functions **[DONE]**
 
 - Implement all of git checkout
 
@@ -169,5 +265,5 @@ There are quite a few things I'd like to build upon. This section keeps track of
 - Create a git commit--amend command
 - Create docstrings and pull 'em in for the help/usage command
 - Document the system design, modules, usage, and installation on mkdocs
-- Debug this sitation - a commit has been made, but no changes in the `INDEX`. Currently, the commit message and hash are created (but aren't being modified in the `INDEX`).
-- Optimize the "changes not staged for commit" functionaity in git status. There's no need to iterate over all files in the repository.
+- Debug this situation - a commit has been made, but no changes in the `INDEX`. Currently, the commit message and hash are created (but aren't being modified in the `INDEX`). **[DONE]**
+- Optimize the "changes not staged for commit" functionality in git status. There's no need to iterate over all files in the repository. **[DONE]**
