@@ -44,6 +44,10 @@ import java.nio.file.{Files, Path, Paths}
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
         ammendCommit(currentDir, None)
 
+        case "squash" :: number :: message :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        squashCommits(currentDir, number.toInt, message)
+
         case "status" :: Nil =>
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
         getStatus(currentDir)
