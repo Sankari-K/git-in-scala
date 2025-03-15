@@ -75,8 +75,22 @@
     <li class="toctree-l2"><a class="reference internal" href="#adding-files-to-the-staging-area-add">Adding files to the staging area: add</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#saving-changes-to-history-commit">Saving changes to history: commit</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#changes-to-data-structures">Changes to data structures</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#checking-the-state-of-your-repository-status">Checking the state of your repository: status</a>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#rewriting-a-commit-amend">Rewriting a commit: amend</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#rewriting-just-the-commit-message-amend-message">Rewriting just the commit message: amend-message</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#adding-more-staged-files-to-the-last-commit-amend-commit">Adding more staged files to the last commit: amend--commit</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#keeping-commits-clean-squash">Keeping commits clean: squash</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#checking-the-state-of-the-repository-status">Checking the state of the repository: status</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#changes-to-be-committed">Changes to be committed</a>
     </li>
@@ -87,6 +101,22 @@
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#reading-commit-history-log">Reading commit history: log</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#restoring-working-tree-files-restore">Restoring working tree files: restore</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#subcommand-restore-staged">Subcommand: restore--staged</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#restoring-working-tree-files-to-a-hash-checkout">Restoring working tree files to a hash: checkout</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#removing-files-rm">Removing files: rm</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#setting-up-repository-constants-config">Setting up repository constants: config</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ignore-files">Ignore files</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#if-nothing-works-pls-work">If nothing works: pls-work</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#to-do">To do</a>
     </li>
@@ -125,12 +155,16 @@
 <li><code>init &lt;directory&gt;</code> - Creates a new git repository. <a href="https://git-scm.com/docs/git-init">(git man page)</a></li>
 <li><code>add &lt;files&gt;</code> - Adds a file to the staging area. <a href="https://git-scm.com/docs/git-add">(git man page)</a></li>
 <li><code>commit &lt;message&gt;</code> - Record changes to the repository. <a href="https://git-scm.com/docs/git-commit">(git man page)</a></li>
+<li><code>amend--message</code> - Changes commmit message of latest commit <a href="https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things">similar to (git man page)</a></li>
+<li><code>amend--commit</code> - Add additional staged changes to the commit <a href="https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things">similar to (git man page)</a></li>
+<li><code>squash</code> - Merges multiple commits into one to keep the repo clean <a href="https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History.html#_rewriting_history">(git man page)</a></li>
 <li><code>status</code> - Show the working tree status of the repository. <a href="https://git-scm.com/docs/git-status">(git man page)</a></li>
 <li><code>log</code> - Show all commits made. <a href="https://git-scm.com/docs/git-log">(git man page)</a></li>
 <li><code>restore &lt;files&gt;</code> - Restore working tree files. <a href="https://git-scm.com/docs/git-restore">(git man page)</a></li>
 <li><code>restore--staged &lt;files&gt;</code> - Restore content in the index. <a href="https://git-scm.com/docs/git-restore">(git man page)</a></li>
 <li><code>checkout &lt;hash&gt;</code> - Restore working tree files to the given hash. <a href="https://git-scm.com/docs/git-checkout">(git man page)</a></li>
 <li><code>rm &lt;files&gt;</code> - Remove files from the worktree and index. <a href="https://git-scm.com/docs/git-rm">(git man page)</a></li>
+<li><code>config &lt;key&gt; &lt;value&gt;</code> - Sets the <code>key</code>'s value to be equal to <code>value</code> in git's config file.</li>
 <li><code>pls-work</code> - A desperate plea to the version control gods. Sometimes, you just need a little extra luck.</li>
 </ul>
 <h2 id="project-layout">Project layout</h2>
@@ -158,9 +192,12 @@ package fileops # has helper functions related to file operations
     3.txt:null:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     egfolder\4.txt:null:e4ec861d34ab491b5b8538ee693c70ccda97e2ac861b8719b0b1d2ffdfe69cd7
 </code></pre>
-<p>A commit is just a snapshot of an index file with an additional commit message, and a unique commit hash that is generated. It would look like this:</p>
+<p>A commit is just a snapshot of an index file with an additional commit message, author name and email, a timestamp of the commit, and a unique commit hash that is generated. It would look like this:</p>
 <pre><code class="language-plaintext">    [da563b40a3e49923b50a173b0cc73c40627a0430]
     Second commit
+    sankari
+    sankarikarthik03@gmail.com
+    sunday march 9 20:47:35 2025 +0530
     1.txt=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855,2860d7deca71859f9fae69da862b3934b772f24d23137f326a030bf042dc8d7d
     2.txt=0051eb1be2439f3db88107f1c8643256d331f3078dc5d51b7c40acfeb03c88b1,0051eb1be2439f3db88107f1c8643256d331f3078dc5d51b7c40acfeb03c88b1
     3.txt=null,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
@@ -168,6 +205,9 @@ package fileops # has helper functions related to file operations
 
     [8baedf145e0717cf216d30f5bb75afc643326ab5]
     First commit
+    sankari
+    sankarikarthik03@gmail.com
+    sunday march 9 20:42:27 2025 +0530
     2.txt=null,0051eb1be2439f3db88107f1c8643256d331f3078dc5d51b7c40acfeb03c88b1
     1.txt=null,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 </code></pre>
@@ -200,12 +240,58 @@ package fileops # has helper functions related to file operations
 <li>So, if there are any changes to the <code>INDEX</code>, that guarantees a different commit hash. </li>
 <li>No changes to the <code>INDEX</code> would lead to the commit hash being the same. This is a nice way to check for changes in the <code>INDEX</code>.</li>
 </ul>
+<h3 id="changes-to-data-structures">Changes to data structures</h3>
 <p>This operation does two things:</p>
 <ul>
 <li>Makes a commit with the generated commit hash (essentially copies the current contents in the <code>INDEX</code> file and makes an entry in the <code>COMMIT</code> file).</li>
 <li>Iterates over the <code>INDEX</code> and updates it - both the <code>oldhash</code> and the <code>newhash</code> are populated with the <code>newhash</code> value. Any file with <code>newhash</code> as <code>null</code> is a deleted file, so it gets removed from the <code>INDEX</code>.</li>
 </ul>
-<h2 id="checking-the-state-of-your-repository-status">Checking the state of your repository: status</h2>
+<hr />
+<p><strong>NOTE</strong></p>
+<blockquote>
+<p>📣 "No changes to the <code>INDEX</code> would lead to the commit hash being the same. This is a nice way to check for changes in the <code>INDEX</code>."
+   This is true in principle. However, consider this case:</p>
+</blockquote>
+<pre><code class="language-python">    scala run ./*.scala -- add 1.txt
+    scala run ./*.scala -- commit &quot;Added file&quot;
+    scala run ./*.scala -- commit &quot;Is this possible&quot;
+</code></pre>
+<blockquote>
+<p>Ideally, the second commit should not be possible. But the <code>commit</code> operation updates the <code>oldhash</code> to be the <code>newhash</code>, so the <code>INDEX</code> technically changes and a commit would be possible.</p>
+<p>Similarly in this situation:</p>
+</blockquote>
+<pre><code class="language-python">    scala run ./*.scala -- rm 1.txt
+    scala run ./*.scala -- commit &quot;Deleted file&quot;
+    scala run ./*.scala -- commit &quot;Is this possible&quot;
+</code></pre>
+<blockquote>
+<p>These cases are taken care of by explicitly checking the <code>INDEX</code> for changes before a commit, and not just the hash of the <code>INDEX</code> contents.</p>
+</blockquote>
+<hr />
+<h2 id="rewriting-a-commit-amend">Rewriting a commit: amend</h2>
+<h3 id="rewriting-just-the-commit-message-amend-message">Rewriting just the commit message: amend-message</h3>
+<p>To just change the commit message of the latest commit, this command can be used. This doesn't change the commit hash, but changes the timestamp of the commit.</p>
+<h3 id="adding-more-staged-files-to-the-last-commit-amend-commit">Adding more staged files to the last commit: amend--commit</h3>
+<p>This command can be used if a commit is done too early and one possibly forgets to add some files. This is done by fetching the latest commit,
+iterating over the current <code>INDEX</code>.</p>
+<pre><code class="language-plaintext">    for all (file, (oldhash, newhash)) in index:
+        lastoldhash, lastnewhash = previousIndex
+        index.update(file, (lastoldhash, newhash))
+</code></pre>
+<p>One case to be considered - if the file was deleted as part of the previous commit, there won't be an entry in the current <code>INDEX</code> - in that case, the old index must be iterated through to update the <code>INDEX</code>.</p>
+<pre><code class="language-plaintext">    for all (file, (lastoldhash, lastnewhash)) in previousIndex:
+        if file not in index:
+            index.update(file, (lastoldhash, lastnewhash))
+</code></pre>
+<p>The latest commit is removed, and a new commit hash is generated based on the updated <code>INDEX</code>. Depending on whether a message was provided or not, the given message or the previous message is taken to create a commit. After the commit, the <code>INDEX</code> is updated like the commit section earlier.</p>
+<h2 id="keeping-commits-clean-squash">Keeping commits clean: squash</h2>
+<p>Multiple commits can be merged into one to keep the repo history clean and succint. This is done by taking the last <code>n</code> commits (<code>n</code> given by the user) and merging two at a time much like the previous commit and the <code>INDEX</code> was merged for <code>amend-commit</code>. The only difference here is that:</p>
+<ul>
+<li>No changes are actually made to the current <code>INDEX</code></li>
+<li>All the <code>n</code> commits are deleted, and replaced by a new commit with a new commit hash and message.</li>
+</ul>
+<p>If <code>n</code> is greater than the number of commits present in the repository, an appropriate error message is shown. </p>
+<h2 id="checking-the-state-of-the-repository-status">Checking the state of the repository: status</h2>
 <h3 id="changes-to-be-committed">Changes to be committed</h3>
 <p>The <code>INDEX</code> is iterated over and - </p>
 <ul>
@@ -223,8 +309,30 @@ package fileops # has helper functions related to file operations
 <ul>
 <li>If the file is not present in the <code>INDEX</code>, it is an untracked file.</li>
 </ul>
+<p>Implementing <code>git status</code> was quite straightforward thanks to thorough brainstorming and choosing the right modules and data structures. This taught me the importance of spending time upfront on basic architecture.</p>
 <h2 id="reading-commit-history-log">Reading commit history: log</h2>
 <p>This just iterates through all <code>commit</code>s made and prints out each one's hash and message.</p>
+<h2 id="restoring-working-tree-files-restore">Restoring working tree files: restore</h2>
+<p>This command deletes working tree changes and restores back the previously staged changes. This is done by getting the <code>newhash</code> from the <code>INDEX</code> for the given file (latest version that was added), and replacing the current contents of the file with the contents pointed to in the <code>objs/</code> directory by the <code>newhash</code>.</p>
+<h3 id="subcommand-restore-staged">Subcommand: restore--staged</h3>
+<p>This command unstages local changes by removing the specified file(s) from the <code>INDEX</code>.</p>
+<h2 id="restoring-working-tree-files-to-a-hash-checkout">Restoring working tree files to a hash: checkout</h2>
+<p>Before the command is run, it makes sure there are no local changes that haven't been committed. Unmodified changes are checked by:</p>
+<ul>
+<li>Checking the diff between the <code>INDEX</code> and current state of files</li>
+<li>Checking the diff in <code>INDEX</code> to check for uncommitted changes.</li>
+</ul>
+<p>Then, the current <code>INDEX</code> is modified to look like the particular commit referenced by the hash given. If the <code>commithash</code> doesn't match any commit, the checkout is aborted. </p>
+<h2 id="removing-files-rm">Removing files: rm</h2>
+<p>This command deletes the specified file and updates that information in the <code>INDEX</code> =&gt; it stages the "deletion".
+That is done by updating the <code>newhash</code> for that file to <code>null</code> and deleting the file from the file system.</p>
+<p>If there are staged changes in the <code>INDEX</code> for that file, the operation is aborted.</p>
+<h2 id="setting-up-repository-constants-config">Setting up repository constants: config</h2>
+<p>This is used to save global variables about the repo, such as the user's name and email (which are used for commit operations).</p>
+<h2 id="ignore-files">Ignore files</h2>
+<p>To ignore a file, a <code>.ignore</code> file can be created in the root directory. A file can't be <code>add</code>ed if it is in the <code>.ignore</code> file.</p>
+<h2 id="if-nothing-works-pls-work">If nothing works: pls-work</h2>
+<p>(self-explanatory)</p>
 <h2 id="to-do">To do</h2>
 <p>There are quite a few things I'd like to build upon. This section keeps track of ideas, improvements, and features I’d like to implement in the future (or, as I like to call it, a staging area for future ideas :P).</p>
 <ul>
@@ -241,12 +349,12 @@ package fileops # has helper functions related to file operations
 <li>
 <p>In general, wegit must run inside any (nested) part of the repo</p>
 </li>
-<li>Implement .gitignore</li>
+<li>Implement .gitignore <strong>[DONE]</strong></li>
 <li>Move the prints to a separate module (a log/message/error handler)</li>
 <li>Implement git delete (and make sure status captures it)</li>
-<li>Add parameters like author, timestamp for a git commit</li>
+<li>Add parameters like author, timestamp for a git commit <strong>[DONE]</strong></li>
 <li>
-<p>Go through modules made and delete unnecessary helper functions</p>
+<p>Go through modules made and delete unnecessary helper functions <strong>[DONE]</strong></p>
 </li>
 <li>
 <p>Implement all of git checkout</p>
@@ -255,12 +363,11 @@ package fileops # has helper functions related to file operations
 </ul>
 </li>
 <li>
-<p>Create a git commit--amend command</p>
+<p>Create a git commit--amend command <strong>[DONE]</strong></p>
 </li>
 <li>Create docstrings and pull 'em in for the help/usage command</li>
-<li>Document the system design, modules, usage, and installation on mkdocs</li>
-<li>Debug this sitation - a commit has been made, but no changes in the <code>INDEX</code>. Currently, the commit message and hash are created (but aren't being modified in the <code>INDEX</code>).</li>
-<li>Optimize the "changes not staged for commit" functionaity in git status. There's no need to iterate over all files in the repository.</li>
+<li>Debug this situation - a commit has been made, but no changes in the <code>INDEX</code>. Currently, the commit message and hash are created (but aren't being modified in the <code>INDEX</code>). <strong>[DONE]</strong></li>
+<li>Optimize the "changes not staged for commit" functionality in git status. There's no need to iterate over all files in the repository. <strong>[DONE]</strong></li>
 </ul>
               
             </div>
@@ -305,5 +412,5 @@ package fileops # has helper functions related to file operations
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2025-01-12 05:27:41.644029+00:00
+Build Date UTC : 2025-03-15 17:18:49.371512+00:00
 -->
