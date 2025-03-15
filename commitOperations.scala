@@ -46,8 +46,7 @@ class Commit(val filePath: String) {
         else None
     }
 
-    // Remove a commit by its hash TODO: find the use for it
-    def removeCommit(hash: String, message: String): Unit = {
+    def removeCommit(hash: String): Unit = {
         if (hasCommit(hash)) commits.remove(hash)
         exportCommits(getCommitPath().toString())
     }

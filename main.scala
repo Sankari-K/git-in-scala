@@ -32,9 +32,17 @@ import java.nio.file.{Files, Path, Paths}
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
         commitFiles(currentDir, message)
 
-        case "commit--amend" :: message :: Nil =>
+        case "amend--message" :: message :: Nil =>
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
-        ammendCommit(currentDir, message)
+        ammendMessage(currentDir, message)
+
+        case "amend--commit" :: message :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        ammendCommit(currentDir, Option(message))
+
+        case "amend--commit" :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        ammendCommit(currentDir, None)
 
         case "status" :: Nil =>
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
@@ -71,7 +79,9 @@ import java.nio.file.{Files, Path, Paths}
         println("  scala run *.scala -- init <directory>")
         println("  scala run *.scala -- add <file>")
         println("  scala run *.scala -- commit <message>")
-        // println("  scala run *.scala -- commit--amend <message>") // TODO
+        println("  scala run *.scala -- amend--message <message>")
+        println("  scala run *.scala -- amend--commit <message>")
+        println("  scala run *.scala -- amend--commit")
         println("  scala run *.scala -- status")
         println("  scala run *.scala -- log")
         println("  scala run *.scala -- restore <files>")
