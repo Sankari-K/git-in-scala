@@ -12,7 +12,7 @@ class Index(val filePath: String) {
 
     def getIndexPath(): Path = {
         val path = Paths.get(filePath).toAbsolutePath()
-        return path.resolve(".wegit").resolve("INDEX")
+        return path.resolve(".wegit").resolve(getCurrentBranch(filePath)).resolve("INDEX")
     }
 
     def isIndexInitialized(): Boolean = {
@@ -81,5 +81,5 @@ class Index(val filePath: String) {
         else {
             ("null", "null")
         }
-      }
     }
+}

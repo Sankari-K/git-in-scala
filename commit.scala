@@ -7,7 +7,7 @@ def commitFiles(currentDir: String, message: String): Unit = {
     var index = new Index(currentDir)
 
     if (!index.isIndexInitialized()) {
-        println("on branch master\n")
+        println(s"on branch ${getCurrentBranch(currentDir)}\n")
         println("no commits yet\n")
         println("nothing to commit (create/copy files and use 'git add' to track)\n")
         sys.exit(1)
@@ -29,7 +29,7 @@ def commitFiles(currentDir: String, message: String): Unit = {
 
     updateIndexAfterCommit(index)
 
-    println(s"[main $commitHash] $message")
+    println(s"[${getCurrentBranch(currentDir)} $commitHash] $message")
 }
 
 def ammendMessage(currentDir: String, message: String): Unit = {
@@ -41,7 +41,7 @@ def ammendMessage(currentDir: String, message: String): Unit = {
         var (_, _, _, _, index) = lastCommitValue
         commit.addCommit(lastCommitHash, index, message)
 
-        println(s"[main $lastCommitHash] $message")
+        println(s"[${getCurrentBranch(currentDir)} $lastCommitHash] $message")
     }
     catch {
         case _: Exception => println("fatal: You have nothing to amend.")
@@ -77,11 +77,11 @@ def ammendCommit(currentDir: String, message: Option[String]): Unit = {
         message match {
             case Some(x) => {
                 commit.addCommit(commitHash, index, x)
-                println(s"[main $commitHash] $x")
+                println(s"[${getCurrentBranch(currentDir)} $commitHash] $x")
             }
             case None =>{
                 commit.addCommit(commitHash, index, lastCommitMessage)
-                println(s"[main $commitHash] $lastCommitMessage")
+                println(s"[${getCurrentBranch(currentDir)} $commitHash] $lastCommitMessage")
             }
         }
 

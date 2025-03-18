@@ -10,6 +10,7 @@ def getStatus(currentDir: String): Unit = {
     
     index.initializeIndex()
 
+    println(Console.WHITE + s"on branch ${{getCurrentBranch(currentDir)}}\n")
     println(Console.WHITE + "changes to be committed: ")
     println("\t(use \"restore -- staged\" to unstage)")
     for ((filepath, (oldhash, newhash)) <- index.getIndex) {

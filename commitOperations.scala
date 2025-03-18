@@ -11,11 +11,11 @@ import java.time.LocalDateTime
 
 class Commit(val filePath: String) {
     // The dictionary to store commit hashes and their corresponding Index objects
-    val commits: mutable.LinkedHashMap[String, (String, String, String, String, Index)] = mutable.LinkedHashMap()
+    var commits: mutable.LinkedHashMap[String, (String, String, String, String, Index)] = mutable.LinkedHashMap()
     
     def getCommitPath(): Path = {
         val path = Paths.get(filePath).toAbsolutePath()
-        return path.resolve(".wegit").resolve("COMMIT")
+        return path.resolve(".wegit").resolve(getCurrentBranch(filePath)).resolve("COMMIT")
     }
 
     def initializeCommit(): Unit = {
@@ -51,7 +51,7 @@ class Commit(val filePath: String) {
         exportCommits(getCommitPath().toString())
     }
 
-    def listCommits: mutable.Map[String, (String, String, String, String, Index)] = commits
+    def listCommits: mutable.LinkedHashMap[String, (String, String, String, String, Index)] = commits
     
     def hasCommit(hash: String): Boolean = {
         commits.contains(hash)

@@ -1,5 +1,4 @@
-import datastructs.Index
-import datastructs.Commit
+import datastructs.*
 import fileops.*
 import gitcommands.*
 
@@ -73,7 +72,36 @@ import java.nio.file.{Files, Path, Paths}
         removeFile(currentDir, files)
 
         case "config" :: attribute :: value =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
         setConfig(currentDir, attribute, value)
+
+        case "create" :: "branch" :: branchName :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        createNewBranch(currentDir, branchName)
+
+        case "checkout" :: "branch" :: branchName :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        checkoutBranch(currentDir, branchName)
+
+        case "switch" :: "branch" :: branchName :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        switchBranch(currentDir, branchName)
+
+        case "rename" :: "branch" :: branchName :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        renameCurrentBranch(currentDir, branchName)
+
+        case "rename" :: "branch" :: oldBranchName :: newBranchName :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        renameBranch(currentDir, oldBranchName, newBranchName)
+
+        case "branch" :: "show-current" :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        showCurrentBranch(currentDir)
+
+        case "branch" :: "show-all" :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        showAllBranches(currentDir)
 
         case "pls-work" :: Nil =>
         plsWork()
@@ -94,6 +122,13 @@ import java.nio.file.{Files, Path, Paths}
         println("  scala run *.scala -- checkout <hash>")
         println("  scala run *.scala -- rm <file>")
         println("  scala run *.scala -- config <key> <value>")
+        println("  scala run *.scala -- create branch <branch name>")
+        println("  scala run *.scala -- checkout branch <branch name>")
+        println("  scala run *.scala -- switch branch <branch name>")
+        println("  scala run *.scala -- rename branch <new branch name>")
+        println("  scala run *.scala -- rename branch <old branch name> <new branch name>")
+        println("  scala run *.scala -- branch show-current")
+        println("  scala run *.scala -- branch show-all")
         println("  scala run *.scala -- pls-work")
   }
 }
