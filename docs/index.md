@@ -20,6 +20,15 @@ This project is a personal implementation of Git, the popular version control sy
 * `checkout <hash>` - Restore working tree files to the given hash. [(git man page)](https://git-scm.com/docs/git-checkout)
 * `rm <files>` - Remove files from the worktree and index. [(git man page)](https://git-scm.com/docs/git-rm)
 * `config <key> <value>` - Sets the `key`'s value to be equal to `value` in git's config file.
+<br>
+
+Please refer to [this](https://git-scm.com/docs/user-manual.html#manipulating-branches) manual for branching commands
+
+* `create branch <branch name>` - Creates a new branch with the name given, doesn't switch to the new branch.
+* `checkout branch <branch name>` - Creates a new branch and switches to it.
+* `switch branch <branch name>` - Switches to an existing branch.
+* `branch show-current` - Shows the current branch that the repo is on.
+* `branch show-all` - Shows all branches created.
 * `pls-work` - A desperate plea to the version control gods. Sometimes, you just need a little extra luck.
 
 ## Project layout
@@ -230,6 +239,72 @@ Before the command is run, it makes sure there are no local changes that haven't
 
 Then, the current `INDEX` is modified to look like the particular commit referenced by the hash given. If the `commithash` doesn't match any commit, the checkout is aborted. 
 
+## Branching operations
+
+Branches are implemented by adding folders inside `.wegit` and inside of those folders, there will be separate `INDEX` and `COMMIT` files (this means there will be multiple staging areas).
+
+The current branch is stored in a file called `HEAD-NAME` inside the `.wegit/` directory.
+
+```plaintext
+.wegit/
+    main/
+        INDEX
+        COMMIT
+    feature/
+        INDEX
+        COMMIT
+    objs/
+        e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  # a blob
+        ...       # more blobs
+```
+
+### Creating a branch: create branch
+
+This is done by creating a directory for this branch inside `.wegit/`. If such a branch exists already, or if the branch name given is invalid (`objs` or `config`, for example), the operation is terminated with an appropriate error message.
+
+Next, the new `INDEX` and `COMMIT` files are created. This is done by copying over the contents from the current branch this command is run from. This command does not switch to the newly created branch.
+
+### Creating and switching to a branch: checkout branch
+
+This pretty much does what `create branch` does, except it also updates `HEAD-NAME`. 
+
+---
+**NOTE**
+
+> 📣 Neither of these operations require a check of any unstaged/uncommitted files, since a new branch is created.
+   
+---
+
+### Switching branches: switch branch
+
+First things first, it makes sure there are no unstaged changes. Each branch can have its own distinct staging area, but unstaged changes are present only in the working tree. This also means that if there are untracked files in the current branch, moving to another branch (where it is tracked and has different contents in it) will get overwritten. If there are unstaged changes in tracked files, the operation is aborted.
+
+Then, validation is done to make sure such a branch exists and the user isn't already on that branch. 
+
+Objects in the current index are removed (the files are deleted), the `HEAD-NAME` file is made to point to the new branch. Then, objects are added to look like the new branch's `INDEX`.
+
+### Renaming a branch: rename branch
+
+If two arguments are given, this command renames the `oldbranch` to `newbranch`. Three pre-checks are done:
+
+* `newbranch` isn't already a branch
+* `newbranch` isn't invalid (`objs` or `config`, for example)
+* `oldbranch` is already a branch
+
+Then, the `oldbranch/` directory is renamed to `newbranch/`.
+
+#### Rename current branch
+If only one argument is given or if the `oldbranch` happens to be the current branch, this (current) branch is renamed to the given `newbranch`.
+
+This additionally changes `HEAD-NAME` to the the new branch name.
+### Current branch: show-current
+
+This shows the contents in `HEAD-NAME`.
+
+### All branches: show-all
+
+This shows all branches in the repo, with markers for what the current branch is. This is done by iterating over all folders in the `.wegit/` directory (and not considering the `objs/` folder). 
+
 ## Removing files: rm
 
 This command deletes the specified file and updates that information in the `INDEX` => it stages the "deletion".
@@ -248,6 +323,17 @@ To ignore a file, a `.ignore` file can be created in the root directory. A file 
 ## If nothing works: pls-work
 
 (self-explanatory)
+
+---
+**📣 NOTE: SOME KNOWN DECISIONS TAKEN**
+
+List of things that were researched, but have been decided as out of scope:
+
+1. Git ideally has hooks to check when files are deleted outside of git. For now, an assumption is made that files are only deleted with the `rm` command inside of `wegit`. This also means that any deletion is always a staged change, and never an unstaged change.
+
+2. Ideally, git asks to `stash` changes when switching branches when there are uncommitted/unstaged changes - this depends on whether/how the working tree must be changed. If it is "clean", switching can be done without stashing or committing. Long story short, there are rules set in place with a lot of corner cases. If interested, this is a good place to start to go down a rabbit hole: [Checkout another branch when there are uncommitted changes on the current branch](https://stackoverflow.com/a/22055552/14719340)
+
+---
 
 ## To do
 
