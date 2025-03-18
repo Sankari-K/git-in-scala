@@ -110,6 +110,26 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#restoring-working-tree-files-to-a-hash-checkout">Restoring working tree files to a hash: checkout</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#branching-operations">Branching operations</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#creating-a-branch-create-branch">Creating a branch: create branch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#creating-and-switching-to-a-branch-checkout-branch">Creating and switching to a branch: checkout branch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#switching-branches-switch-branch">Switching branches: switch branch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#renaming-a-branch-rename-branch">Renaming a branch: rename branch</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#rename-current-branch">Rename current branch</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#current-branch-show-current">Current branch: show-current</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#all-branches-show-all">All branches: show-all</a>
+    </li>
+        </ul>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#removing-files-rm">Removing files: rm</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#setting-up-repository-constants-config">Setting up repository constants: config</a>
@@ -164,7 +184,16 @@
 <li><code>restore--staged &lt;files&gt;</code> - Restore content in the index. <a href="https://git-scm.com/docs/git-restore">(git man page)</a></li>
 <li><code>checkout &lt;hash&gt;</code> - Restore working tree files to the given hash. <a href="https://git-scm.com/docs/git-checkout">(git man page)</a></li>
 <li><code>rm &lt;files&gt;</code> - Remove files from the worktree and index. <a href="https://git-scm.com/docs/git-rm">(git man page)</a></li>
-<li><code>config &lt;key&gt; &lt;value&gt;</code> - Sets the <code>key</code>'s value to be equal to <code>value</code> in git's config file.</li>
+<li><code>config &lt;key&gt; &lt;value&gt;</code> - Sets the <code>key</code>'s value to be equal to <code>value</code> in git's config file.
+<br></li>
+</ul>
+<p>Please refer to <a href="https://git-scm.com/docs/user-manual.html#manipulating-branches">this</a> manual for branching commands</p>
+<ul>
+<li><code>create branch &lt;branch name&gt;</code> - Creates a new branch with the name given, doesn't switch to the new branch.</li>
+<li><code>checkout branch &lt;branch name&gt;</code> - Creates a new branch and switches to it.</li>
+<li><code>switch branch &lt;branch name&gt;</code> - Switches to an existing branch.</li>
+<li><code>branch show-current</code> - Shows the current branch that the repo is on.</li>
+<li><code>branch show-all</code> - Shows all branches created.</li>
 <li><code>pls-work</code> - A desperate plea to the version control gods. Sometimes, you just need a little extra luck.</li>
 </ul>
 <h2 id="project-layout">Project layout</h2>
@@ -323,6 +352,50 @@ iterating over the current <code>INDEX</code>.</p>
 <li>Checking the diff in <code>INDEX</code> to check for uncommitted changes.</li>
 </ul>
 <p>Then, the current <code>INDEX</code> is modified to look like the particular commit referenced by the hash given. If the <code>commithash</code> doesn't match any commit, the checkout is aborted. </p>
+<h2 id="branching-operations">Branching operations</h2>
+<p>Branches are implemented by adding folders inside <code>.wegit</code> and inside of those folders, there will be separate <code>INDEX</code> and <code>COMMIT</code> files (this means there will be multiple staging areas).</p>
+<p>The current branch is stored in a file called <code>HEAD-NAME</code> inside the <code>.wegit/</code> directory.</p>
+<pre><code class="language-plaintext">.wegit/
+    main/
+        INDEX
+        COMMIT
+    feature/
+        INDEX
+        COMMIT
+    objs/
+        e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  # a blob
+        ...       # more blobs
+</code></pre>
+<h3 id="creating-a-branch-create-branch">Creating a branch: create branch</h3>
+<p>This is done by creating a directory for this branch inside <code>.wegit/</code>. If such a branch exists already, or if the branch name given is invalid (<code>objs</code> or <code>config</code>, for example), the operation is terminated with an appropriate error message.</p>
+<p>Next, the new <code>INDEX</code> and <code>COMMIT</code> files are created. This is done by copying over the contents from the current branch this command is run from. This command does not switch to the newly created branch.</p>
+<h3 id="creating-and-switching-to-a-branch-checkout-branch">Creating and switching to a branch: checkout branch</h3>
+<p>This pretty much does what <code>create branch</code> does, except it also updates <code>HEAD-NAME</code>. </p>
+<hr />
+<p><strong>NOTE</strong></p>
+<blockquote>
+<p>📣 Neither of these operations require a check of any unstaged/uncommitted files, since a new branch is created.</p>
+</blockquote>
+<hr />
+<h3 id="switching-branches-switch-branch">Switching branches: switch branch</h3>
+<p>First things first, it makes sure there are no unstaged changes. Each branch can have its own distinct staging area, but unstaged changes are present only in the working tree. This also means that if there are untracked files in the current branch, moving to another branch (where it is tracked and has different contents in it) will get overwritten. If there are unstaged changes in tracked files, the operation is aborted.</p>
+<p>Then, validation is done to make sure such a branch exists and the user isn't already on that branch. </p>
+<p>Objects in the current index are removed (the files are deleted), the <code>HEAD-NAME</code> file is made to point to the new branch. Then, objects are added to look like the new branch's <code>INDEX</code>.</p>
+<h3 id="renaming-a-branch-rename-branch">Renaming a branch: rename branch</h3>
+<p>If two arguments are given, this command renames the <code>oldbranch</code> to <code>newbranch</code>. Three pre-checks are done:</p>
+<ul>
+<li><code>newbranch</code> isn't already a branch</li>
+<li><code>newbranch</code> isn't invalid (<code>objs</code> or <code>config</code>, for example)</li>
+<li><code>oldbranch</code> is already a branch</li>
+</ul>
+<p>Then, the <code>oldbranch/</code> directory is renamed to <code>newbranch/</code>.</p>
+<h4 id="rename-current-branch">Rename current branch</h4>
+<p>If only one argument is given or if the <code>oldbranch</code> happens to be the current branch, this (current) branch is renamed to the given <code>newbranch</code>.</p>
+<p>This additionally changes <code>HEAD-NAME</code> to the the new branch name.</p>
+<h3 id="current-branch-show-current">Current branch: show-current</h3>
+<p>This shows the contents in <code>HEAD-NAME</code>.</p>
+<h3 id="all-branches-show-all">All branches: show-all</h3>
+<p>This shows all branches in the repo, with markers for what the current branch is. This is done by iterating over all folders in the <code>.wegit/</code> directory (and not considering the <code>objs/</code> folder). </p>
 <h2 id="removing-files-rm">Removing files: rm</h2>
 <p>This command deletes the specified file and updates that information in the <code>INDEX</code> =&gt; it stages the "deletion".
 That is done by updating the <code>newhash</code> for that file to <code>null</code> and deleting the file from the file system.</p>
@@ -333,6 +406,18 @@ That is done by updating the <code>newhash</code> for that file to <code>null</c
 <p>To ignore a file, a <code>.ignore</code> file can be created in the root directory. A file can't be <code>add</code>ed if it is in the <code>.ignore</code> file.</p>
 <h2 id="if-nothing-works-pls-work">If nothing works: pls-work</h2>
 <p>(self-explanatory)</p>
+<hr />
+<p><strong>📣 NOTE: SOME KNOWN DECISIONS TAKEN</strong></p>
+<p>List of things that were researched, but have been decided as out of scope:</p>
+<ol>
+<li>
+<p>Git ideally has hooks to check when files are deleted outside of git. For now, an assumption is made that files are only deleted with the <code>rm</code> command inside of <code>wegit</code>. This also means that any deletion is always a staged change, and never an unstaged change.</p>
+</li>
+<li>
+<p>Ideally, git asks to <code>stash</code> changes when switching branches when there are uncommitted/unstaged changes - this depends on whether/how the working tree must be changed. If it is "clean", switching can be done without stashing or committing. Long story short, there are rules set in place with a lot of corner cases. If interested, this is a good place to start to go down a rabbit hole: <a href="https://stackoverflow.com/a/22055552/14719340">Checkout another branch when there are uncommitted changes on the current branch</a></p>
+</li>
+</ol>
+<hr />
 <h2 id="to-do">To do</h2>
 <p>There are quite a few things I'd like to build upon. This section keeps track of ideas, improvements, and features I’d like to implement in the future (or, as I like to call it, a staging area for future ideas :P).</p>
 <ul>
@@ -412,5 +497,5 @@ That is done by updating the <code>newhash</code> for that file to <code>null</c
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2025-03-15 17:18:49.371512+00:00
+Build Date UTC : 2025-03-18 15:40:21.882484+00:00
 -->
