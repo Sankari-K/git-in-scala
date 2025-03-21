@@ -18,8 +18,10 @@ def checkoutCommit(currentDir: String, commitHash: String): Unit = {
 
     for ((file, (oldhash, newhash)) <- index.getIndex) {
 
-        if (newhash != computeFileHash(file)) {
-            abortCheckout()
+        if (newhash != "null") {
+            if (newhash != computeFileHash(file)) {
+                abortCheckout()
+            }
         }
 
         if (oldhash != newhash) {

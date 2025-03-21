@@ -73,8 +73,10 @@ def safeSwitchBranch(filePath: String, branchName: String): Unit = {
 
     for ((file, (oldhash, newhash)) <- index.getIndex) {
 
-        if (newhash != computeFileHash(file)) {
-            abortSwitch()
+        if (newhash != "null") {
+            if (newhash != computeFileHash(file)) {
+                abortSwitch()
+            }
         }
     }
 
