@@ -5,7 +5,7 @@ import java.security.MessageDigest
 import scala.util.Using
 import scala.jdk.StreamConverters._
 import java.util.zip.{DeflaterOutputStream, InflaterInputStream}
-import java.io.{FileOutputStream, FileInputStream}
+import java.io.{FileOutputStream, FileInputStream, File}
 import gitcommands.*
 
 def computeFileHash(filePath: String, algorithm: String = "SHA-256"): String = {
@@ -15,42 +15,29 @@ def computeFileHash(filePath: String, algorithm: String = "SHA-256"): String = {
 }
 
 def listFilesInDirectory(directory: Path): Either[Throwable, List[String]] = {
-  try {
-    var fileList = Files.walk(directory).toScala(Seq)
-      .filter(path => Files.isRegularFile(path) && !path.toString.contains(".wegit"))
-      .map(path => directory.relativize(path).toString)
-      .toList
+    try {
+      var fileList = Files.walk(directory).toScala(Seq)
+        .filter(path => Files.isRegularFile(path) && !path.toString.contains(".wegit"))
+        .map(path => directory.relativize(path).toString)
+        .toList
 
-    fileList = fileList.filter(path => !getIgnoredFiles(directory.toString()).contains(path))
+      fileList = fileList.filter(path => !getIgnoredFiles(directory.toString()).contains(path))
 
-    Right(fileList)
-  } catch {
-    case e: Throwable => Left(e)
+      Right(fileList)
+    } catch {
+      case e: Throwable => Left(e)
   }
 }
 
-// def listFilesInDirectory(directory: Path): Either[Throwable, List[String]] = {
-//     try {
-//       val fileList = Files.walk(directory).toScala(Seq) 
-//         .filter(Files.isRegularFile(_))
-//         .map(path => directory.relativize(path).toString) 
-//         .toList
-
-//         Right(fileList)
-//     } catch {
-//         case e: Throwable => Left(e) 
-//     }
-// }
-
 def addCompressedFile(inputFilePath: String, outputFilePath: String): Either[Throwable, Unit] = {
-   try {
+    try {
         val inputBytes = Files.readAllBytes(Paths.get(inputFilePath)) 
 
         val outputStream = new DeflaterOutputStream(new FileOutputStream(outputFilePath))
         try {
             outputStream.write(inputBytes)
         } finally {
-          outputStream.close() 
+            outputStream.close() 
         }
 
         Right(()) 
@@ -72,5 +59,14 @@ def addDecompressedFile(inputFilePath: String, outputFilePath: String): Either[T
         Right(())
     } catch {
         case e: Throwable => Left(e)
+    }
+}
+
+def deleteDirectory(file: File): Unit = {
+    if (file.isDirectory) {
+        file.listFiles.foreach(deleteDirectory)
+    }
+    if (file.exists && !file.delete) {
+        throw new Exception(s"Unable to delete ${file.getAbsolutePath}")
     }
 }

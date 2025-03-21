@@ -1,6 +1,18 @@
 import datastructs.*
 
-def squashCommits(currentDir: String, number: Int, commitMessage: String): Unit = {
+def squashCommits(currentDir: String, amount: String, commitMessage: String): Unit = {
+
+    var number = 0;
+    try {
+        number = amount.toInt
+    }
+    catch {
+        case _: Exception => {
+            println("fatal: number of commits must be an integer value")
+            sys.exit(1)
+        }
+    }
+
     // does nothing to current index/currently staged files
     var commit = new Commit(currentDir)
     commit.initializeCommit()

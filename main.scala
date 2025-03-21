@@ -45,7 +45,7 @@ import java.nio.file.{Files, Path, Paths}
 
         case "squash" :: number :: message :: Nil =>
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
-        squashCommits(currentDir, number.toInt, message)
+        squashCommits(currentDir, number, message)
 
         case "status" :: Nil =>
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
@@ -95,6 +95,18 @@ import java.nio.file.{Files, Path, Paths}
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
         renameBranch(currentDir, oldBranchName, newBranchName)
 
+        case "delete" :: "branch" :: branchName :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        deleteBranch(currentDir, branchName)
+
+        case "delete" :: "branch" :: "since" :: days :: "days" :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        deleteInactiveBranches(currentDir, days)
+
+        case "show" :: "branch" :: "since" :: days :: "days" :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        showInactiveBranches(currentDir, days)
+
         case "branch" :: "show-current" :: Nil =>
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
         showCurrentBranch(currentDir)
@@ -127,6 +139,9 @@ import java.nio.file.{Files, Path, Paths}
         println("  scala run *.scala -- switch branch <branch name>")
         println("  scala run *.scala -- rename branch <new branch name>")
         println("  scala run *.scala -- rename branch <old branch name> <new branch name>")
+        println("  scala run *.scala -- delete branch <branch name>")
+        println("  scala run *.scala -- delete branch since <days> days")
+        println("  scala run *.scala -- show branch since <days> days")
         println("  scala run *.scala -- branch show-current")
         println("  scala run *.scala -- branch show-all")
         println("  scala run *.scala -- pls-work")

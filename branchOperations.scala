@@ -71,7 +71,7 @@ def safeSwitchBranch(filePath: String, branchName: String): Unit = {
     var index = new Index(filePath)
     index.initializeIndex()
 
-     for ((file, (oldhash, newhash)) <- index.getIndex) {
+    for ((file, (oldhash, newhash)) <- index.getIndex) {
 
         if (newhash != computeFileHash(file)) {
             abortSwitch()
@@ -142,16 +142,6 @@ def abortSwitch(): Unit = {
     println("fatal: there are unstaged changes, please stage or commit them before switching branches.")
     sys.exit(1)
 }
-
-// def deleteRecursively(file: File): Unit = {
-//     if (file.isDirectory) {
-//         file.listFiles.foreach(x => x.delete())
-//     }
-//     file.delete()
-//     if (file.exists && !file.delete) {
-//         throw new Exception(s"Unable to delete ${file.getAbsolutePath}")
-//     }
-// }
 
 def renameDirectory(sourcePath: String, targetPath: String): Unit = {
     val source = Paths.get(sourcePath)

@@ -19,11 +19,11 @@ class Commit(val filePath: String) {
     }
 
     def initializeCommit(): Unit = {
-        val indexPath = getCommitPath()
-        if (!Files.exists(indexPath)) {
-            Files.createFile(indexPath)
+        val commitPath = getCommitPath()
+        if (!Files.exists(commitPath)) {
+            Files.createFile(commitPath)
         }
-        importCommits(indexPath.toString())
+        importCommits(commitPath.toString())
     }
 
     def getCommitHash(index: Index): String = {
@@ -78,7 +78,8 @@ class Commit(val filePath: String) {
     }
 
     def importCommits(filePath: String): Unit = {
-        val source = scala.io.Source.fromFile(filePath).getLines().toList
+        val sourceFile = scala.io.Source.fromFile(filePath)
+        val source = sourceFile.getLines().toList
         var fileLine = 0
         while (fileLine < source.length) {
             val line = source(fileLine)
@@ -112,6 +113,7 @@ class Commit(val filePath: String) {
             }
             fileLine = fileLine + 1
         }
+        sourceFile.close()
     }
 
     def getTimeStamp(): String = {
