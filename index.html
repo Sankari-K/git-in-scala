@@ -126,6 +126,10 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#delete-a-branch">Delete a branch</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#delete-inactive-branches">Delete inactive branches</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#show-inactive-branches">Show inactive branches</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="#current-branch-show-current">Current branch: show-current</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#all-branches-show-all">All branches: show-all</a>
@@ -137,6 +141,22 @@
     <li class="toctree-l2"><a class="reference internal" href="#setting-up-repository-constants-config">Setting up repository constants: config</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#ignore-files">Ignore files</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#finding-file-diffs">Finding file diffs</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#using-longest-common-subsequence-for-diffing">Using Longest Common Subsequence for diffing</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#how-lcs-works">How LCS works</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#how-diffing-is-done-with-lcs-information">How diffing is done with LCS information</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#differences-bw-the-working-tree-and-the-staging-area">Differences b/w the working tree and the staging area</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#differences-bw-the-staging-area-and-the-latest-commit">Differences b/w the staging area and the latest commit</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#if-nothing-works-pls-work">If nothing works: pls-work</a>
     </li>
@@ -194,8 +214,15 @@
 <li><code>create branch &lt;branch name&gt;</code> - Creates a new branch with the name given, doesn't switch to the new branch.</li>
 <li><code>checkout branch &lt;branch name&gt;</code> - Creates a new branch and switches to it.</li>
 <li><code>switch branch &lt;branch name&gt;</code> - Switches to an existing branch.</li>
+<li><code>rename branch &lt;new branch name&gt;</code> - Renames current branch to new branch</li>
+<li><code>rename branch &lt;old branch name&gt; &lt;new branch name&gt;</code> - Renames a given branch to something else.</li>
+<li><code>delete branch &lt;branch name&gt;</code> - Deletes a given branch</li>
+<li><code>delete branch since &lt;days&gt; days</code> - Deletes branches that have been inactive for the past <code>days</code> days (with the exception of the current branch)</li>
+<li><code>show branch since &lt;days&gt; days</code> - Shows branches that have been inactive for the past <code>days</code> days (with the exception of the current branch)</li>
 <li><code>branch show-current</code> - Shows the current branch that the repo is on.</li>
 <li><code>branch show-all</code> - Shows all branches created.</li>
+<li><code>diff &lt;file&gt;</code> - Shows the diff between the working directory and <code>INDEX</code> for a particular file. <a href="https://git-scm.com/docs/git-diff">(git man page)</a></li>
+<li><code>diff--staged &lt;file&gt;</code> - Shows the diff between the <code>INDEX</code> and the latest commit for a particular file. <a href="https://git-scm.com/docs/git-diff">(git man page)</a></li>
 <li><code>pls-work</code> - A desperate plea to the version control gods. Sometimes, you just need a little extra luck.</li>
 </ul>
 <h2 id="project-layout">Project layout</h2>
@@ -331,9 +358,14 @@ iterating over the current <code>INDEX</code>.</p>
 <li>Deleted files are found by making sure <code>newhash</code> is <code>null</code>.</li>
 </ul>
 <h3 id="changes-not-staged-for-commit">Changes not staged for commit</h3>
-<p>All files in the repo are iterated over (and if it is present in the <code>INDEX</code>) - </p>
+<p>All files in the <code>INDEX</code> are iterated over - </p>
 <ul>
-<li>The current contents of the file are found, and the hash is computed. If that isn't equal to the <code>newhash</code> present in the <code>INDEX</code> for that file, there are untracked modifications.</li>
+<li>
+<p>If the file exists, and <code>newhash</code> isn't <code>null</code> (if <code>newhash</code> is null, that means the deletion of the file is staged) the current contents of the file are found, and the hash is computed. If that isn't equal to the <code>newhash</code> present in the <code>INDEX</code> for that file, there are untracked modifications.</p>
+</li>
+<li>
+<p>If the file doesn't exist and if <code>newhash</code> is <code>null</code>, that means it was deleted outside of <code>wegit</code> - so this is an unstaged deletion (the only place where this case is being considered, please refer to known decisions made).</p>
+</li>
 </ul>
 <h3 id="untracked-files">Untracked files</h3>
 <p>All files in the repo are iterated over -</p>
@@ -395,6 +427,15 @@ iterating over the current <code>INDEX</code>.</p>
 <p>If only one argument is given or if the <code>oldbranch</code> happens to be the current branch, this (current) branch is renamed to the given <code>newbranch</code>.</p>
 <p>This additionally changes <code>HEAD-NAME</code> to the the new branch name.</p>
 <h3 id="delete-a-branch">Delete a branch</h3>
+<p>Given a branch name, this command deletes the directory <code>./wegit/branchname</code>. Two basic pre-checks are done for <code>branchname</code>:</p>
+<ul>
+<li>the branch can't be the current branch</li>
+<li>the branch must exist</li>
+</ul>
+<h3 id="delete-inactive-branches">Delete inactive branches</h3>
+<p>This is done by iterating over all branches that have atleast one commit (with the exception of the current branch since it can't be deleted while on it anyway), finding the latest commit's timestamp and checking how long it has been since that commit was made. If that amount is greater than the amount of time given by the user, the branch is deleted.</p>
+<h3 id="show-inactive-branches">Show inactive branches</h3>
+<p>This does the same thing as mentioned above, except it only prints out those branches, doesn't delete them. This command can be used to check which branches will get deleted before using the previous command.</p>
 <h3 id="current-branch-show-current">Current branch: show-current</h3>
 <p>This shows the contents in <code>HEAD-NAME</code>.</p>
 <h3 id="all-branches-show-all">All branches: show-all</h3>
@@ -407,6 +448,61 @@ That is done by updating the <code>newhash</code> for that file to <code>null</c
 <p>This is used to save global variables about the repo, such as the user's name and email (which are used for commit operations).</p>
 <h2 id="ignore-files">Ignore files</h2>
 <p>To ignore a file, a <code>.ignore</code> file can be created in the root directory. A file can't be <code>add</code>ed if it is in the <code>.ignore</code> file.</p>
+<h2 id="finding-file-diffs">Finding file diffs</h2>
+<p>A line by line diffing algorithm won't work since even if one line is removed, all following lines appear as changed.</p>
+<h3 id="using-longest-common-subsequence-for-diffing">Using Longest Common Subsequence for diffing</h3>
+<p>To fix this issue, longest common subsequence is used. The goal is to compare two lists of strings (original and modified versions of a file) and output the differences in a meaningful way.</p>
+<p>The LCS is the longest sequence of lines that appears in both files in order, but not necessarily consecutively. </p>
+<h4 id="how-lcs-works">How LCS works</h4>
+<p>Given two lists of strings <code>a</code> (of length <code>i</code>) and <code>b</code> (of length <code>j</code>) - </p>
+<ol>
+<li>Create a 2D dp table where <code>dp(i)(j)</code> stores the length of LCS for <code>a[0..i - 1]</code> and <code>b[0..j - 1]</code>.</li>
+<li>Fill the dp table using dynammic programming:<ul>
+<li>If <code>a[i - 1]</code> == <code>b[j - 1]</code>, then the LCS extends:
+    <code>dp(i, j) = dp(i - 1, j - 1) + 1</code></li>
+<li>Otherwise, take the maximum LCS length by skipping either <code>a[i - 1]</code> or <code>b[j - 1]</code>: <code>dp(i, j) = max(dp(i − 1, j), dp(i, j − 1))</code></li>
+</ul>
+</li>
+<li>Backtrack to extract the LCS indices:<ul>
+<li>Start from the bottom-right of the table `(i = a.length, j = b.length)</li>
+<li>If <code>a[i - 1]</code> == <code>b[j - 1]</code>, it is part of LCS → store <code>(i - 1, j - 1)</code></li>
+<li>Otherwise, move in the direction of the larger LCS value</li>
+</ul>
+</li>
+</ol>
+<p>This function returns a set of <code>(i, j)</code> indices, which represents matching lines in both files.</p>
+<h4 id="how-diffing-is-done-with-lcs-information">How diffing is done with LCS information</h4>
+<ol>
+<li>
+<p>Two pointers are initialized:</p>
+<ul>
+<li><code>i = 0</code> (points to current line in list of lines <code>a</code>)</li>
+<li><code>j = 0</code> (points to current line in list of lines <code>b</code>)</li>
+</ul>
+</li>
+<li>
+<p>Iterate through both files until all lines are processed:</p>
+<ul>
+<li>The lines match (<code>a(i) == b(j)</code>): Output the line normally, since it is unchanged. Move both pointers forward.</li>
+<li>A line was deleted (exists in <code>a</code> but not in the set returned by LCS): Print in red (- line), indicating it was removed. Move just the <code>i</code> pointer forward.</li>
+<li>A line was added (exists in <code>b</code> but not in the set returned by LCS): Print in green (+ line), indicating it was added. Move just the <code>j</code> pointer forward.</li>
+<li>A line was modified (exists in both, but changed): 
+Print the original in red (- line).
+Print the new version in green (+ line).
+Move both pointers forward.</li>
+</ul>
+</li>
+</ol>
+<h3 id="differences-bw-the-working-tree-and-the-staging-area">Differences b/w the working tree and the staging area</h3>
+<p>This finds the difference between the working tree(+) with respect to the index(-). If the file doesn't exist in the filesystem, it prints out an error message.</p>
+<p>The <code>INDEX</code> is initialized and the indexed content is found by reading the compressed <code>newhash</code> object from the <code>objs/</code> directory. Since the file definitely exists, <code>newhash</code> will definitely not be <code>null</code>.</p>
+<p>The working tree's content is found by just reading the file in the repo.</p>
+<p>The diff between these two is found with the algorithm described above.</p>
+<h3 id="differences-bw-the-staging-area-and-the-latest-commit">Differences b/w the staging area and the latest commit</h3>
+<p>This finds the difference between the index(+) with respect to the latest commit(-). Here, there is no need to check if the file exists in the filesystem since that info is never used anyway.</p>
+<p>The <code>INDEX</code> is initialized and the indexed content is found by reading the compressed <code>newhash</code> and <code>oldhash</code> objects from the <code>objs/</code> directory. Since there's no guarantee that the file exists in the working directory (a git rm could have been done), <code>newhash</code> needs to be non-null and that's checked. Also, there's no guarantee that this file was part of a commit already so <code>oldhash</code> needs to be non-null as well.</p>
+<p>If either hashes are <code>null</code>, the respective file contents are taken to be empty. </p>
+<p>No brownie points for guessing how the diff between these two is found 🍪</p>
 <h2 id="if-nothing-works-pls-work">If nothing works: pls-work</h2>
 <p>(self-explanatory)</p>
 <hr />
@@ -414,7 +510,7 @@ That is done by updating the <code>newhash</code> for that file to <code>null</c
 <p>List of things that were researched, but have been decided as out of scope:</p>
 <ol>
 <li>
-<p>Git ideally has hooks to check when files are deleted outside of git. For now, an assumption is made that files are only deleted with the <code>rm</code> command inside of <code>wegit</code>. This also means that any deletion is always a staged change, and never an unstaged change.</p>
+<p>Git ideally has to check for when files are deleted outside of git. For now, an assumption is made that files are only deleted with the <code>rm</code> command inside of <code>wegit</code>. This also means that any deletion is always a staged change, and never an unstaged change. (I've coded up logic to check for unstaged deletions in status alone, but not anywhere else)</p>
 </li>
 <li>
 <p>Ideally, git asks to <code>stash</code> changes when switching branches when there are uncommitted/unstaged changes - this depends on whether/how the working tree must be changed. If it is "clean", switching can be done without stashing or committing. Long story short, there are rules set in place with a lot of corner cases. If interested, this is a good place to start to go down a rabbit hole: <a href="https://stackoverflow.com/a/22055552/14719340">Checkout another branch when there are uncommitted changes on the current branch</a></p>
@@ -431,7 +527,7 @@ That is done by updating the <code>newhash</code> for that file to <code>null</c
 <ul>
 <li>current directory ("." or no params) </li>
 <li>any directory (relative or absolute)</li>
-<li>multiple files</li>
+<li>multiple files <strong>[DONE]</strong></li>
 </ul>
 </li>
 <li>
@@ -439,7 +535,7 @@ That is done by updating the <code>newhash</code> for that file to <code>null</c
 </li>
 <li>Implement .gitignore <strong>[DONE]</strong></li>
 <li>Move the prints to a separate module (a log/message/error handler)</li>
-<li>Implement git delete (and make sure status captures it)</li>
+<li>Implement git delete (and make sure status captures it) <strong>[DONE]</strong></li>
 <li>Add parameters like author, timestamp for a git commit <strong>[DONE]</strong></li>
 <li>
 <p>Go through modules made and delete unnecessary helper functions <strong>[DONE]</strong></p>
@@ -456,6 +552,10 @@ That is done by updating the <code>newhash</code> for that file to <code>null</c
 <li>Create docstrings and pull 'em in for the help/usage command</li>
 <li>Debug this situation - a commit has been made, but no changes in the <code>INDEX</code>. Currently, the commit message and hash are created (but aren't being modified in the <code>INDEX</code>). <strong>[DONE]</strong></li>
 <li>Optimize the "changes not staged for commit" functionality in git status. There's no need to iterate over all files in the repository. <strong>[DONE]</strong></li>
+<li>Make sure deletion/undeletion works fine for all operations (like restore--staged and adding a deleted file)</li>
+<li>If (big if) I decide to implement unstaged deletion, get <code>git ls-files --deleted</code> to work</li>
+<li>Ability to visualize commit tree across branches</li>
+<li>Implement nesting of files and ability to run commands from anywhere inside the repo</li>
 </ul>
               
             </div>
@@ -500,5 +600,5 @@ That is done by updating the <code>newhash</code> for that file to <code>null</c
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2025-03-19 01:34:12.515556+00:00
+Build Date UTC : 2025-03-22 10:10:07.571595+00:00
 -->
