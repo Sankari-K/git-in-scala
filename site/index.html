@@ -75,8 +75,22 @@
     <li class="toctree-l2"><a class="reference internal" href="#adding-files-to-the-staging-area-add">Adding files to the staging area: add</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#saving-changes-to-history-commit">Saving changes to history: commit</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#changes-to-data-structures">Changes to data structures</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#checking-the-state-of-your-repository-status">Checking the state of your repository: status</a>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#rewriting-a-commit-amend">Rewriting a commit: amend</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#rewriting-just-the-commit-message-amend-message">Rewriting just the commit message: amend-message</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#adding-more-staged-files-to-the-last-commit-amend-commit">Adding more staged files to the last commit: amend--commit</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#keeping-commits-clean-squash">Keeping commits clean: squash</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#checking-the-state-of-the-repository-status">Checking the state of the repository: status</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#changes-to-be-committed">Changes to be committed</a>
     </li>
@@ -87,6 +101,64 @@
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#reading-commit-history-log">Reading commit history: log</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#restoring-working-tree-files-restore">Restoring working tree files: restore</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#subcommand-restore-staged">Subcommand: restore--staged</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#restoring-working-tree-files-to-a-hash-checkout">Restoring working tree files to a hash: checkout</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#branching-operations">Branching operations</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#creating-a-branch-create-branch">Creating a branch: create branch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#creating-and-switching-to-a-branch-checkout-branch">Creating and switching to a branch: checkout branch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#switching-branches-switch-branch">Switching branches: switch branch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#renaming-a-branch-rename-branch">Renaming a branch: rename branch</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#rename-current-branch">Rename current branch</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#delete-a-branch">Delete a branch</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#delete-inactive-branches">Delete inactive branches</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#show-inactive-branches">Show inactive branches</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#current-branch-show-current">Current branch: show-current</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#all-branches-show-all">All branches: show-all</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#removing-files-rm">Removing files: rm</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#setting-up-repository-constants-config">Setting up repository constants: config</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ignore-files">Ignore files</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#finding-file-diffs">Finding file diffs</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#using-longest-common-subsequence-for-diffing">Using Longest Common Subsequence for diffing</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#how-lcs-works">How LCS works</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#how-diffing-is-done-with-lcs-information">How diffing is done with LCS information</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#differences-bw-the-working-tree-and-the-staging-area">Differences b/w the working tree and the staging area</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#differences-bw-the-staging-area-and-the-latest-commit">Differences b/w the staging area and the latest commit</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#if-nothing-works-pls-work">If nothing works: pls-work</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#to-do">To do</a>
     </li>
@@ -125,12 +197,32 @@
 <li><code>init &lt;directory&gt;</code> - Creates a new git repository. <a href="https://git-scm.com/docs/git-init">(git man page)</a></li>
 <li><code>add &lt;files&gt;</code> - Adds a file to the staging area. <a href="https://git-scm.com/docs/git-add">(git man page)</a></li>
 <li><code>commit &lt;message&gt;</code> - Record changes to the repository. <a href="https://git-scm.com/docs/git-commit">(git man page)</a></li>
+<li><code>amend--message</code> - Changes commmit message of latest commit <a href="https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things">similar to (git man page)</a></li>
+<li><code>amend--commit</code> - Add additional staged changes to the commit <a href="https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things">similar to (git man page)</a></li>
+<li><code>squash</code> - Merges multiple commits into one to keep the repo clean <a href="https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History.html#_rewriting_history">(git man page)</a></li>
 <li><code>status</code> - Show the working tree status of the repository. <a href="https://git-scm.com/docs/git-status">(git man page)</a></li>
 <li><code>log</code> - Show all commits made. <a href="https://git-scm.com/docs/git-log">(git man page)</a></li>
 <li><code>restore &lt;files&gt;</code> - Restore working tree files. <a href="https://git-scm.com/docs/git-restore">(git man page)</a></li>
 <li><code>restore--staged &lt;files&gt;</code> - Restore content in the index. <a href="https://git-scm.com/docs/git-restore">(git man page)</a></li>
 <li><code>checkout &lt;hash&gt;</code> - Restore working tree files to the given hash. <a href="https://git-scm.com/docs/git-checkout">(git man page)</a></li>
 <li><code>rm &lt;files&gt;</code> - Remove files from the worktree and index. <a href="https://git-scm.com/docs/git-rm">(git man page)</a></li>
+<li><code>config &lt;key&gt; &lt;value&gt;</code> - Sets the <code>key</code>'s value to be equal to <code>value</code> in git's config file.
+<br></li>
+</ul>
+<p>Please refer to <a href="https://git-scm.com/docs/user-manual.html#manipulating-branches">this</a> manual for branching commands</p>
+<ul>
+<li><code>create branch &lt;branch name&gt;</code> - Creates a new branch with the name given, doesn't switch to the new branch.</li>
+<li><code>checkout branch &lt;branch name&gt;</code> - Creates a new branch and switches to it.</li>
+<li><code>switch branch &lt;branch name&gt;</code> - Switches to an existing branch.</li>
+<li><code>rename branch &lt;new branch name&gt;</code> - Renames current branch to new branch</li>
+<li><code>rename branch &lt;old branch name&gt; &lt;new branch name&gt;</code> - Renames a given branch to something else.</li>
+<li><code>delete branch &lt;branch name&gt;</code> - Deletes a given branch</li>
+<li><code>delete branch since &lt;days&gt; days</code> - Deletes branches that have been inactive for the past <code>days</code> days (with the exception of the current branch)</li>
+<li><code>show branch since &lt;days&gt; days</code> - Shows branches that have been inactive for the past <code>days</code> days (with the exception of the current branch)</li>
+<li><code>branch show-current</code> - Shows the current branch that the repo is on.</li>
+<li><code>branch show-all</code> - Shows all branches created.</li>
+<li><code>diff &lt;file&gt;</code> - Shows the diff between the working directory and <code>INDEX</code> for a particular file. <a href="https://git-scm.com/docs/git-diff">(git man page)</a></li>
+<li><code>diff--staged &lt;file&gt;</code> - Shows the diff between the <code>INDEX</code> and the latest commit for a particular file. <a href="https://git-scm.com/docs/git-diff">(git man page)</a></li>
 <li><code>pls-work</code> - A desperate plea to the version control gods. Sometimes, you just need a little extra luck.</li>
 </ul>
 <h2 id="project-layout">Project layout</h2>
@@ -158,9 +250,12 @@ package fileops # has helper functions related to file operations
     3.txt:null:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     egfolder\4.txt:null:e4ec861d34ab491b5b8538ee693c70ccda97e2ac861b8719b0b1d2ffdfe69cd7
 </code></pre>
-<p>A commit is just a snapshot of an index file with an additional commit message, and a unique commit hash that is generated. It would look like this:</p>
+<p>A commit is just a snapshot of an index file with an additional commit message, author name and email, a timestamp of the commit, and a unique commit hash that is generated. It would look like this:</p>
 <pre><code class="language-plaintext">    [da563b40a3e49923b50a173b0cc73c40627a0430]
     Second commit
+    sankari
+    sankarikarthik03@gmail.com
+    sunday march 9 20:47:35 2025 +0530
     1.txt=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855,2860d7deca71859f9fae69da862b3934b772f24d23137f326a030bf042dc8d7d
     2.txt=0051eb1be2439f3db88107f1c8643256d331f3078dc5d51b7c40acfeb03c88b1,0051eb1be2439f3db88107f1c8643256d331f3078dc5d51b7c40acfeb03c88b1
     3.txt=null,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
@@ -168,6 +263,9 @@ package fileops # has helper functions related to file operations
 
     [8baedf145e0717cf216d30f5bb75afc643326ab5]
     First commit
+    sankari
+    sankarikarthik03@gmail.com
+    sunday march 9 20:42:27 2025 +0530
     2.txt=null,0051eb1be2439f3db88107f1c8643256d331f3078dc5d51b7c40acfeb03c88b1
     1.txt=null,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 </code></pre>
@@ -200,12 +298,58 @@ package fileops # has helper functions related to file operations
 <li>So, if there are any changes to the <code>INDEX</code>, that guarantees a different commit hash. </li>
 <li>No changes to the <code>INDEX</code> would lead to the commit hash being the same. This is a nice way to check for changes in the <code>INDEX</code>.</li>
 </ul>
+<h3 id="changes-to-data-structures">Changes to data structures</h3>
 <p>This operation does two things:</p>
 <ul>
 <li>Makes a commit with the generated commit hash (essentially copies the current contents in the <code>INDEX</code> file and makes an entry in the <code>COMMIT</code> file).</li>
 <li>Iterates over the <code>INDEX</code> and updates it - both the <code>oldhash</code> and the <code>newhash</code> are populated with the <code>newhash</code> value. Any file with <code>newhash</code> as <code>null</code> is a deleted file, so it gets removed from the <code>INDEX</code>.</li>
 </ul>
-<h2 id="checking-the-state-of-your-repository-status">Checking the state of your repository: status</h2>
+<hr />
+<p><strong>NOTE</strong></p>
+<blockquote>
+<p>📣 "No changes to the <code>INDEX</code> would lead to the commit hash being the same. This is a nice way to check for changes in the <code>INDEX</code>."
+   This is true in principle. However, consider this case:</p>
+</blockquote>
+<pre><code class="language-python">    scala run ./*.scala -- add 1.txt
+    scala run ./*.scala -- commit &quot;Added file&quot;
+    scala run ./*.scala -- commit &quot;Is this possible&quot;
+</code></pre>
+<blockquote>
+<p>Ideally, the second commit should not be possible. But the <code>commit</code> operation updates the <code>oldhash</code> to be the <code>newhash</code>, so the <code>INDEX</code> technically changes and a commit would be possible.</p>
+<p>Similarly in this situation:</p>
+</blockquote>
+<pre><code class="language-python">    scala run ./*.scala -- rm 1.txt
+    scala run ./*.scala -- commit &quot;Deleted file&quot;
+    scala run ./*.scala -- commit &quot;Is this possible&quot;
+</code></pre>
+<blockquote>
+<p>These cases are taken care of by explicitly checking the <code>INDEX</code> for changes before a commit, and not just the hash of the <code>INDEX</code> contents.</p>
+</blockquote>
+<hr />
+<h2 id="rewriting-a-commit-amend">Rewriting a commit: amend</h2>
+<h3 id="rewriting-just-the-commit-message-amend-message">Rewriting just the commit message: amend-message</h3>
+<p>To just change the commit message of the latest commit, this command can be used. This doesn't change the commit hash, but changes the timestamp of the commit.</p>
+<h3 id="adding-more-staged-files-to-the-last-commit-amend-commit">Adding more staged files to the last commit: amend--commit</h3>
+<p>This command can be used if a commit is done too early and one possibly forgets to add some files. This is done by fetching the latest commit,
+iterating over the current <code>INDEX</code>.</p>
+<pre><code class="language-plaintext">    for all (file, (oldhash, newhash)) in index:
+        lastoldhash, lastnewhash = previousIndex
+        index.update(file, (lastoldhash, newhash))
+</code></pre>
+<p>One case to be considered - if the file was deleted as part of the previous commit, there won't be an entry in the current <code>INDEX</code> - in that case, the old index must be iterated through to update the <code>INDEX</code>.</p>
+<pre><code class="language-plaintext">    for all (file, (lastoldhash, lastnewhash)) in previousIndex:
+        if file not in index:
+            index.update(file, (lastoldhash, lastnewhash))
+</code></pre>
+<p>The latest commit is removed, and a new commit hash is generated based on the updated <code>INDEX</code>. Depending on whether a message was provided or not, the given message or the previous message is taken to create a commit. After the commit, the <code>INDEX</code> is updated like the commit section earlier.</p>
+<h2 id="keeping-commits-clean-squash">Keeping commits clean: squash</h2>
+<p>Multiple commits can be merged into one to keep the repo history clean and succint. This is done by taking the last <code>n</code> commits (<code>n</code> given by the user) and merging two at a time much like the previous commit and the <code>INDEX</code> was merged for <code>amend-commit</code>. The only difference here is that:</p>
+<ul>
+<li>No changes are actually made to the current <code>INDEX</code></li>
+<li>All the <code>n</code> commits are deleted, and replaced by a new commit with a new commit hash and message.</li>
+</ul>
+<p>If <code>n</code> is greater than the number of commits present in the repository, an appropriate error message is shown. </p>
+<h2 id="checking-the-state-of-the-repository-status">Checking the state of the repository: status</h2>
 <h3 id="changes-to-be-committed">Changes to be committed</h3>
 <p>The <code>INDEX</code> is iterated over and - </p>
 <ul>
@@ -214,17 +358,165 @@ package fileops # has helper functions related to file operations
 <li>Deleted files are found by making sure <code>newhash</code> is <code>null</code>.</li>
 </ul>
 <h3 id="changes-not-staged-for-commit">Changes not staged for commit</h3>
-<p>All files in the repo are iterated over (and if it is present in the <code>INDEX</code>) - </p>
+<p>All files in the <code>INDEX</code> are iterated over - </p>
 <ul>
-<li>The current contents of the file are found, and the hash is computed. If that isn't equal to the <code>newhash</code> present in the <code>INDEX</code> for that file, there are untracked modifications.</li>
+<li>
+<p>If the file exists, and <code>newhash</code> isn't <code>null</code> (if <code>newhash</code> is null, that means the deletion of the file is staged) the current contents of the file are found, and the hash is computed. If that isn't equal to the <code>newhash</code> present in the <code>INDEX</code> for that file, there are untracked modifications.</p>
+</li>
+<li>
+<p>If the file doesn't exist and if <code>newhash</code> is <code>null</code>, that means it was deleted outside of <code>wegit</code> - so this is an unstaged deletion (the only place where this case is being considered, please refer to known decisions made).</p>
+</li>
 </ul>
 <h3 id="untracked-files">Untracked files</h3>
 <p>All files in the repo are iterated over -</p>
 <ul>
 <li>If the file is not present in the <code>INDEX</code>, it is an untracked file.</li>
 </ul>
+<p>Implementing <code>git status</code> was quite straightforward thanks to thorough brainstorming and choosing the right modules and data structures. This taught me the importance of spending time upfront on basic architecture.</p>
 <h2 id="reading-commit-history-log">Reading commit history: log</h2>
 <p>This just iterates through all <code>commit</code>s made and prints out each one's hash and message.</p>
+<h2 id="restoring-working-tree-files-restore">Restoring working tree files: restore</h2>
+<p>This command deletes working tree changes and restores back the previously staged changes. This is done by getting the <code>newhash</code> from the <code>INDEX</code> for the given file (latest version that was added), and replacing the current contents of the file with the contents pointed to in the <code>objs/</code> directory by the <code>newhash</code>.</p>
+<h3 id="subcommand-restore-staged">Subcommand: restore--staged</h3>
+<p>This command unstages local changes by removing the specified file(s) from the <code>INDEX</code>.</p>
+<h2 id="restoring-working-tree-files-to-a-hash-checkout">Restoring working tree files to a hash: checkout</h2>
+<p>Before the command is run, it makes sure there are no local changes that haven't been committed. Unmodified changes are checked by:</p>
+<ul>
+<li>Checking the diff between the <code>INDEX</code> and current state of files</li>
+<li>Checking the diff in <code>INDEX</code> to check for uncommitted changes.</li>
+</ul>
+<p>Then, the current <code>INDEX</code> is modified to look like the particular commit referenced by the hash given. If the <code>commithash</code> doesn't match any commit, the checkout is aborted. </p>
+<h2 id="branching-operations">Branching operations</h2>
+<p>Branches are implemented by adding folders inside <code>.wegit</code> and inside of those folders, there will be separate <code>INDEX</code> and <code>COMMIT</code> files (this means there will be multiple staging areas).</p>
+<p>The current branch is stored in a file called <code>HEAD-NAME</code> inside the <code>.wegit/</code> directory.</p>
+<pre><code class="language-plaintext">.wegit/
+    main/
+        INDEX
+        COMMIT
+    feature/
+        INDEX
+        COMMIT
+    objs/
+        e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  # a blob
+        ...       # more blobs
+</code></pre>
+<h3 id="creating-a-branch-create-branch">Creating a branch: create branch</h3>
+<p>This is done by creating a directory for this branch inside <code>.wegit/</code>. If such a branch exists already, or if the branch name given is invalid (<code>objs</code> or <code>config</code>, for example), the operation is terminated with an appropriate error message.</p>
+<p>Next, the new <code>INDEX</code> and <code>COMMIT</code> files are created. This is done by copying over the contents from the current branch this command is run from. This command does not switch to the newly created branch.</p>
+<h3 id="creating-and-switching-to-a-branch-checkout-branch">Creating and switching to a branch: checkout branch</h3>
+<p>This pretty much does what <code>create branch</code> does, except it also updates <code>HEAD-NAME</code>. </p>
+<hr />
+<p><strong>NOTE</strong></p>
+<blockquote>
+<p>📣 Neither of these operations require a check of any unstaged/uncommitted files, since a new branch is created.</p>
+</blockquote>
+<hr />
+<h3 id="switching-branches-switch-branch">Switching branches: switch branch</h3>
+<p>First things first, it makes sure there are no unstaged changes. Each branch can have its own distinct staging area, but unstaged changes are present only in the working tree. This also means that if there are untracked files in the current branch, moving to another branch (where it is tracked and has different contents in it) will get overwritten. If there are unstaged changes in tracked files, the operation is aborted.</p>
+<p>Then, validation is done to make sure such a branch exists and the user isn't already on that branch. </p>
+<p>Objects in the current index are removed (the files are deleted), the <code>HEAD-NAME</code> file is made to point to the new branch. Then, objects are added to look like the new branch's <code>INDEX</code>.</p>
+<h3 id="renaming-a-branch-rename-branch">Renaming a branch: rename branch</h3>
+<p>If two arguments are given, this command renames the <code>oldbranch</code> to <code>newbranch</code>. Three pre-checks are done:</p>
+<ul>
+<li><code>newbranch</code> isn't already a branch</li>
+<li><code>newbranch</code> isn't invalid (<code>objs</code> or <code>config</code>, for example)</li>
+<li><code>oldbranch</code> is already a branch</li>
+</ul>
+<p>Then, the <code>oldbranch/</code> directory is renamed to <code>newbranch/</code>.</p>
+<h4 id="rename-current-branch">Rename current branch</h4>
+<p>If only one argument is given or if the <code>oldbranch</code> happens to be the current branch, this (current) branch is renamed to the given <code>newbranch</code>.</p>
+<p>This additionally changes <code>HEAD-NAME</code> to the the new branch name.</p>
+<h3 id="delete-a-branch">Delete a branch</h3>
+<p>Given a branch name, this command deletes the directory <code>./wegit/branchname</code>. Two basic pre-checks are done for <code>branchname</code>:</p>
+<ul>
+<li>the branch can't be the current branch</li>
+<li>the branch must exist</li>
+</ul>
+<h3 id="delete-inactive-branches">Delete inactive branches</h3>
+<p>This is done by iterating over all branches that have atleast one commit (with the exception of the current branch since it can't be deleted while on it anyway), finding the latest commit's timestamp and checking how long it has been since that commit was made. If that amount is greater than the amount of time given by the user, the branch is deleted.</p>
+<h3 id="show-inactive-branches">Show inactive branches</h3>
+<p>This does the same thing as mentioned above, except it only prints out those branches, doesn't delete them. This command can be used to check which branches will get deleted before using the previous command.</p>
+<h3 id="current-branch-show-current">Current branch: show-current</h3>
+<p>This shows the contents in <code>HEAD-NAME</code>.</p>
+<h3 id="all-branches-show-all">All branches: show-all</h3>
+<p>This shows all branches in the repo, with markers for what the current branch is. This is done by iterating over all folders in the <code>.wegit/</code> directory (and not considering the <code>objs/</code> folder). </p>
+<h2 id="removing-files-rm">Removing files: rm</h2>
+<p>This command deletes the specified file and updates that information in the <code>INDEX</code> =&gt; it stages the "deletion".
+That is done by updating the <code>newhash</code> for that file to <code>null</code> and deleting the file from the file system.</p>
+<p>If there are staged changes in the <code>INDEX</code> for that file, the operation is aborted.</p>
+<h2 id="setting-up-repository-constants-config">Setting up repository constants: config</h2>
+<p>This is used to save global variables about the repo, such as the user's name and email (which are used for commit operations).</p>
+<h2 id="ignore-files">Ignore files</h2>
+<p>To ignore a file, a <code>.ignore</code> file can be created in the root directory. A file can't be <code>add</code>ed if it is in the <code>.ignore</code> file.</p>
+<h2 id="finding-file-diffs">Finding file diffs</h2>
+<p>A line by line diffing algorithm won't work since even if one line is removed, all following lines appear as changed.</p>
+<h3 id="using-longest-common-subsequence-for-diffing">Using Longest Common Subsequence for diffing</h3>
+<p>To fix this issue, longest common subsequence is used. The goal is to compare two lists of strings (original and modified versions of a file) and output the differences in a meaningful way.</p>
+<p>The LCS is the longest sequence of lines that appears in both files in order, but not necessarily consecutively. </p>
+<h4 id="how-lcs-works">How LCS works</h4>
+<p>Given two lists of strings <code>a</code> (of length <code>i</code>) and <code>b</code> (of length <code>j</code>) - </p>
+<ol>
+<li>Create a 2D dp table where <code>dp(i)(j)</code> stores the length of LCS for <code>a[0..i - 1]</code> and <code>b[0..j - 1]</code>.</li>
+<li>Fill the dp table using dynammic programming:<ul>
+<li>If <code>a[i - 1]</code> == <code>b[j - 1]</code>, then the LCS extends:
+    <code>dp(i, j) = dp(i - 1, j - 1) + 1</code></li>
+<li>Otherwise, take the maximum LCS length by skipping either <code>a[i - 1]</code> or <code>b[j - 1]</code>: <code>dp(i, j) = max(dp(i − 1, j), dp(i, j − 1))</code></li>
+</ul>
+</li>
+<li>Backtrack to extract the LCS indices:<ul>
+<li>Start from the bottom-right of the table `(i = a.length, j = b.length)</li>
+<li>If <code>a[i - 1]</code> == <code>b[j - 1]</code>, it is part of LCS → store <code>(i - 1, j - 1)</code></li>
+<li>Otherwise, move in the direction of the larger LCS value</li>
+</ul>
+</li>
+</ol>
+<p>This function returns a set of <code>(i, j)</code> indices, which represents matching lines in both files.</p>
+<h4 id="how-diffing-is-done-with-lcs-information">How diffing is done with LCS information</h4>
+<ol>
+<li>
+<p>Two pointers are initialized:</p>
+<ul>
+<li><code>i = 0</code> (points to current line in list of lines <code>a</code>)</li>
+<li><code>j = 0</code> (points to current line in list of lines <code>b</code>)</li>
+</ul>
+</li>
+<li>
+<p>Iterate through both files until all lines are processed:</p>
+<ul>
+<li>The lines match (<code>a(i) == b(j)</code>): Output the line normally, since it is unchanged. Move both pointers forward.</li>
+<li>A line was deleted (exists in <code>a</code> but not in the set returned by LCS): Print in red (- line), indicating it was removed. Move just the <code>i</code> pointer forward.</li>
+<li>A line was added (exists in <code>b</code> but not in the set returned by LCS): Print in green (+ line), indicating it was added. Move just the <code>j</code> pointer forward.</li>
+<li>A line was modified (exists in both, but changed): 
+Print the original in red (- line).
+Print the new version in green (+ line).
+Move both pointers forward.</li>
+</ul>
+</li>
+</ol>
+<h3 id="differences-bw-the-working-tree-and-the-staging-area">Differences b/w the working tree and the staging area</h3>
+<p>This finds the difference between the working tree(+) with respect to the index(-). If the file doesn't exist in the filesystem, it prints out an error message.</p>
+<p>The <code>INDEX</code> is initialized and the indexed content is found by reading the compressed <code>newhash</code> object from the <code>objs/</code> directory. Since the file definitely exists, <code>newhash</code> will definitely not be <code>null</code>.</p>
+<p>The working tree's content is found by just reading the file in the repo.</p>
+<p>The diff between these two is found with the algorithm described above.</p>
+<h3 id="differences-bw-the-staging-area-and-the-latest-commit">Differences b/w the staging area and the latest commit</h3>
+<p>This finds the difference between the index(+) with respect to the latest commit(-). Here, there is no need to check if the file exists in the filesystem since that info is never used anyway.</p>
+<p>The <code>INDEX</code> is initialized and the indexed content is found by reading the compressed <code>newhash</code> and <code>oldhash</code> objects from the <code>objs/</code> directory. Since there's no guarantee that the file exists in the working directory (a git rm could have been done), <code>newhash</code> needs to be non-null and that's checked. Also, there's no guarantee that this file was part of a commit already so <code>oldhash</code> needs to be non-null as well.</p>
+<p>If either hashes are <code>null</code>, the respective file contents are taken to be empty. </p>
+<p>No brownie points for guessing how the diff between these two is found 🍪</p>
+<h2 id="if-nothing-works-pls-work">If nothing works: pls-work</h2>
+<p>(self-explanatory)</p>
+<hr />
+<p><strong>📣 NOTE: SOME KNOWN DECISIONS TAKEN</strong></p>
+<p>List of things that were researched, but have been decided as out of scope:</p>
+<ol>
+<li>
+<p>Git ideally has to check for when files are deleted outside of git. For now, an assumption is made that files are only deleted with the <code>rm</code> command inside of <code>wegit</code>. This also means that any deletion is always a staged change, and never an unstaged change. (I've coded up logic to check for unstaged deletions in status alone, but not anywhere else)</p>
+</li>
+<li>
+<p>Ideally, git asks to <code>stash</code> changes when switching branches when there are uncommitted/unstaged changes - this depends on whether/how the working tree must be changed. If it is "clean", switching can be done without stashing or committing. Long story short, there are rules set in place with a lot of corner cases. If interested, this is a good place to start to go down a rabbit hole: <a href="https://stackoverflow.com/a/22055552/14719340">Checkout another branch when there are uncommitted changes on the current branch</a></p>
+</li>
+</ol>
+<hr />
 <h2 id="to-do">To do</h2>
 <p>There are quite a few things I'd like to build upon. This section keeps track of ideas, improvements, and features I’d like to implement in the future (or, as I like to call it, a staging area for future ideas :P).</p>
 <ul>
@@ -235,18 +527,18 @@ package fileops # has helper functions related to file operations
 <ul>
 <li>current directory ("." or no params) </li>
 <li>any directory (relative or absolute)</li>
-<li>multiple files</li>
+<li>multiple files <strong>[DONE]</strong></li>
 </ul>
 </li>
 <li>
 <p>In general, wegit must run inside any (nested) part of the repo</p>
 </li>
-<li>Implement .gitignore</li>
+<li>Implement .gitignore <strong>[DONE]</strong></li>
 <li>Move the prints to a separate module (a log/message/error handler)</li>
-<li>Implement git delete (and make sure status captures it)</li>
-<li>Add parameters like author, timestamp for a git commit</li>
+<li>Implement git delete (and make sure status captures it) <strong>[DONE]</strong></li>
+<li>Add parameters like author, timestamp for a git commit <strong>[DONE]</strong></li>
 <li>
-<p>Go through modules made and delete unnecessary helper functions</p>
+<p>Go through modules made and delete unnecessary helper functions <strong>[DONE]</strong></p>
 </li>
 <li>
 <p>Implement all of git checkout</p>
@@ -255,12 +547,15 @@ package fileops # has helper functions related to file operations
 </ul>
 </li>
 <li>
-<p>Create a git commit--amend command</p>
+<p>Create a git commit--amend command <strong>[DONE]</strong></p>
 </li>
 <li>Create docstrings and pull 'em in for the help/usage command</li>
-<li>Document the system design, modules, usage, and installation on mkdocs</li>
-<li>Debug this sitation - a commit has been made, but no changes in the <code>INDEX</code>. Currently, the commit message and hash are created (but aren't being modified in the <code>INDEX</code>).</li>
-<li>Optimize the "changes not staged for commit" functionaity in git status. There's no need to iterate over all files in the repository.</li>
+<li>Debug this situation - a commit has been made, but no changes in the <code>INDEX</code>. Currently, the commit message and hash are created (but aren't being modified in the <code>INDEX</code>). <strong>[DONE]</strong></li>
+<li>Optimize the "changes not staged for commit" functionality in git status. There's no need to iterate over all files in the repository. <strong>[DONE]</strong></li>
+<li>Make sure deletion/undeletion works fine for all operations (like restore--staged and adding a deleted file)</li>
+<li>If (big if) I decide to implement unstaged deletion, get <code>git ls-files --deleted</code> to work</li>
+<li>Ability to visualize commit tree across branches</li>
+<li>Implement nesting of files and ability to run commands from anywhere inside the repo</li>
 </ul>
               
             </div>
@@ -305,5 +600,5 @@ package fileops # has helper functions related to file operations
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2025-01-12 05:27:41.644029+00:00
+Build Date UTC : 2025-03-22 10:11:13.966069+00:00
 -->
