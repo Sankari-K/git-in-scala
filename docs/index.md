@@ -27,8 +27,15 @@ Please refer to [this](https://git-scm.com/docs/user-manual.html#manipulating-br
 * `create branch <branch name>` - Creates a new branch with the name given, doesn't switch to the new branch.
 * `checkout branch <branch name>` - Creates a new branch and switches to it.
 * `switch branch <branch name>` - Switches to an existing branch.
+* `rename branch <new branch name>` - Renames current branch to new branch
+* `rename branch <old branch name> <new branch name>` - Renames a given branch to something else.
+* `delete branch <branch name>` - Deletes a given branch
+* `delete branch since <days> days` - Deletes branches that have been inactive for the past `days` days (with the exception of the current branch)
+* `show branch since <days> days` - Shows branches that have been inactive for the past `days` days (with the exception of the current branch)
 * `branch show-current` - Shows the current branch that the repo is on.
 * `branch show-all` - Shows all branches created.
+* `diff <file>` - Shows the diff between the working directory and `INDEX` for a particular file. [(git man page)](https://git-scm.com/docs/git-diff)
+* `diff--staged <file>` - Shows the diff between the `INDEX` and the latest commit for a particular file. [(git man page)](https://git-scm.com/docs/git-diff)
 * `pls-work` - A desperate plea to the version control gods. Sometimes, you just need a little extra luck.
 
 ## Project layout
@@ -206,9 +213,11 @@ The `INDEX` is iterated over and -
 
 ### Changes not staged for commit
 
-All files in the repo are iterated over (and if it is present in the `INDEX`) - 
+All files in the `INDEX` are iterated over - 
 
-* The current contents of the file are found, and the hash is computed. If that isn't equal to the `newhash` present in the `INDEX` for that file, there are untracked modifications.
+* If the file exists, and `newhash` isn't `null` (if `newhash` is null, that means the deletion of the file is staged) the current contents of the file are found, and the hash is computed. If that isn't equal to the `newhash` present in the `INDEX` for that file, there are untracked modifications.
+
+* If the file doesn't exist and if `newhash` is `null`, that means it was deleted outside of `wegit` - so this is an unstaged deletion (the only place where this case is being considered, please refer to known decisions made).
 
 ### Untracked files
 
@@ -297,6 +306,22 @@ Then, the `oldbranch/` directory is renamed to `newbranch/`.
 If only one argument is given or if the `oldbranch` happens to be the current branch, this (current) branch is renamed to the given `newbranch`.
 
 This additionally changes `HEAD-NAME` to the the new branch name.
+
+### Delete a branch
+
+Given a branch name, this command deletes the directory `./wegit/branchname`. Two basic pre-checks are done for `branchname`:
+
+* the branch can't be the current branch
+* the branch must exist
+
+### Delete inactive branches
+
+This is done by iterating over all branches that have atleast one commit (with the exception of the current branch since it can't be deleted while on it anyway), finding the latest commit's timestamp and checking how long it has been since that commit was made. If that amount is greater than the amount of time given by the user, the branch is deleted.
+
+### Show inactive branches
+
+This does the same thing as mentioned above, except it only prints out those branches, doesn't delete them. This command can be used to check which branches will get deleted before using the previous command.
+
 ### Current branch: show-current
 
 This shows the contents in `HEAD-NAME`.
@@ -320,6 +345,67 @@ This is used to save global variables about the repo, such as the user's name an
 
 To ignore a file, a `.ignore` file can be created in the root directory. A file can't be `add`ed if it is in the `.ignore` file.
 
+## Finding file diffs
+
+A line by line diffing algorithm won't work since even if one line is removed, all following lines appear as changed.
+
+### Using Longest Common Subsequence for diffing
+
+To fix this issue, longest common subsequence is used. The goal is to compare two lists of strings (original and modified versions of a file) and output the differences in a meaningful way.
+
+The LCS is the longest sequence of lines that appears in both files in order, but not necessarily consecutively. 
+
+#### How LCS works
+
+Given two lists of strings `a` (of length `i`) and `b` (of length `j`) - 
+
+1. Create a 2D dp table where `dp(i)(j)` stores the length of LCS for `a[0..i - 1]` and `b[0..j - 1]`.
+2. Fill the dp table using dynammic programming:
+    * If `a[i - 1]` == `b[j - 1]`, then the LCS extends:
+        `dp(i, j) = dp(i - 1, j - 1) + 1`
+    * Otherwise, take the maximum LCS length by skipping either `a[i - 1]` or `b[j - 1]`: `dp(i, j) = max(dp(i − 1, j), dp(i, j − 1))`
+3. Backtrack to extract the LCS indices:
+    * Start from the bottom-right of the table `(i = a.length, j = b.length)
+    * If `a[i - 1]` == `b[j - 1]`, it is part of LCS → store `(i - 1, j - 1)`
+    * Otherwise, move in the direction of the larger LCS value
+
+This function returns a set of `(i, j)` indices, which represents matching lines in both files.
+
+#### How diffing is done with LCS information
+
+1. Two pointers are initialized:
+    * `i = 0` (points to current line in list of lines `a`)
+    * `j = 0` (points to current line in list of lines `b`)
+
+2. Iterate through both files until all lines are processed:
+    * The lines match (`a(i) == b(j)`): Output the line normally, since it is unchanged. Move both pointers forward.
+    * A line was deleted (exists in `a` but not in the set returned by LCS): Print in red (- line), indicating it was removed. Move just the `i` pointer forward.
+    * A line was added (exists in `b` but not in the set returned by LCS): Print in green (+ line), indicating it was added. Move just the `j` pointer forward.
+    * A line was modified (exists in both, but changed): 
+    Print the original in red (- line).
+    Print the new version in green (+ line).
+    Move both pointers forward.
+
+### Differences b/w the working tree and the staging area
+
+This finds the difference between the working tree(+) with respect to the index(-). If the file doesn't exist in the filesystem, it prints out an error message.
+
+The `INDEX` is initialized and the indexed content is found by reading the compressed `newhash` object from the `objs/` directory. Since the file definitely exists, `newhash` will definitely not be `null`.
+
+The working tree's content is found by just reading the file in the repo.
+
+The diff between these two is found with the algorithm described above.
+
+### Differences b/w the staging area and the latest commit 
+
+This finds the difference between the index(+) with respect to the latest commit(-). Here, there is no need to check if the file exists in the filesystem since that info is never used anyway.
+
+The `INDEX` is initialized and the indexed content is found by reading the compressed `newhash` and `oldhash` objects from the `objs/` directory. Since there's no guarantee that the file exists in the working directory (a git rm could have been done), `newhash` needs to be non-null and that's checked. Also, there's no guarantee that this file was part of a commit already so `oldhash` needs to be non-null as well.
+
+If either hashes are `null`, the respective file contents are taken to be empty. 
+
+No brownie points for guessing how the diff between these two is found 🍪
+
 ## If nothing works: pls-work
 
 (self-explanatory)
@@ -329,7 +415,7 @@ To ignore a file, a `.ignore` file can be created in the root directory. A file 
 
 List of things that were researched, but have been decided as out of scope:
 
-1. Git ideally has hooks to check when files are deleted outside of git. For now, an assumption is made that files are only deleted with the `rm` command inside of `wegit`. This also means that any deletion is always a staged change, and never an unstaged change.
+1. Git ideally has to check for when files are deleted outside of git. For now, an assumption is made that files are only deleted with the `rm` command inside of `wegit`. This also means that any deletion is always a staged change, and never an unstaged change. (I've coded up logic to check for unstaged deletions in status alone, but not anywhere else)
 
 2. Ideally, git asks to `stash` changes when switching branches when there are uncommitted/unstaged changes - this depends on whether/how the working tree must be changed. If it is "clean", switching can be done without stashing or committing. Long story short, there are rules set in place with a lot of corner cases. If interested, this is a good place to start to go down a rabbit hole: [Checkout another branch when there are uncommitted changes on the current branch](https://stackoverflow.com/a/22055552/14719340)
 
@@ -345,12 +431,12 @@ There are quite a few things I'd like to build upon. This section keeps track of
 
     * current directory ("." or no params) 
     * any directory (relative or absolute)
-    * multiple files
+    * multiple files **[DONE]**
 
 - In general, wegit must run inside any (nested) part of the repo
 - Implement .gitignore **[DONE]**
 - Move the prints to a separate module (a log/message/error handler)
-- Implement git delete (and make sure status captures it)
+- Implement git delete (and make sure status captures it) **[DONE]**
 - Add parameters like author, timestamp for a git commit **[DONE]**
 - Go through modules made and delete unnecessary helper functions **[DONE]**
 
@@ -362,3 +448,7 @@ There are quite a few things I'd like to build upon. This section keeps track of
 - Create docstrings and pull 'em in for the help/usage command
 - Debug this situation - a commit has been made, but no changes in the `INDEX`. Currently, the commit message and hash are created (but aren't being modified in the `INDEX`). **[DONE]**
 - Optimize the "changes not staged for commit" functionality in git status. There's no need to iterate over all files in the repository. **[DONE]**
+- Make sure deletion/undeletion works fine for all operations (like restore--staged and adding a deleted file)
+- If (big if) I decide to implement unstaged deletion, get `git ls-files --deleted` to work
+- Ability to visualize commit tree across branches
+- Implement nesting of files and ability to run commands from anywhere inside the repo
