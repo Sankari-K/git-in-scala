@@ -6,6 +6,7 @@ import java.nio.file.{Paths, Files}
 import scala.collection.immutable.Stream.Cons
 
 def getStatus(currentDir: String): Unit = {
+    val path = Paths.get(currentDir).resolve(".wegit")
     val index = new Index(currentDir)
     
     index.initializeIndex()
@@ -25,7 +26,7 @@ def getStatus(currentDir: String): Unit = {
     }
     for ((filepath, (oldhash, newhash)) <- index.getIndex) {
         if (newhash == "null") {
-            println("\t" + Console.YELLOW + "deleted file: " + filepath)
+            println("\t" + Console.YELLOW + "deleted: " + filepath)
         }
     }
     println()
@@ -37,8 +38,14 @@ def getStatus(currentDir: String): Unit = {
         // newhash is checked with null to make sure file still exists
         // if it doesn't exist, it would be a deleted file anyway
         if (newhash != "null") {
-            if (newhash != computeFileHash(file)) {
-                println("\t" + Console.RED + "modified: " + file)
+            // it was deleted, but not via git
+            if (!Files.exists(path.resolve(file))) {
+                println("\t" + Console.MAGENTA + "deleted: " + file)
+            }
+            else {
+                if (newhash != computeFileHash(file)) {
+                    println("\t" + Console.RED + "modified: " + file)
+                }
             }
         }
     }
