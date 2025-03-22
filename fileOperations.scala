@@ -5,7 +5,7 @@ import java.security.MessageDigest
 import scala.util.Using
 import scala.jdk.StreamConverters._
 import java.util.zip.{DeflaterOutputStream, InflaterInputStream}
-import java.io.{FileOutputStream, FileInputStream, File}
+import java.io.{FileOutputStream, FileInputStream, File, BufferedReader, InputStreamReader}
 import gitcommands.*
 
 def computeFileHash(filePath: String, algorithm: String = "SHA-256"): String = {
@@ -68,5 +68,22 @@ def deleteDirectory(file: File): Unit = {
     }
     if (file.exists && !file.delete) {
         throw new Exception(s"Unable to delete ${file.getAbsolutePath}")
+    }
+}
+
+def getFileContent(filePath: String): List[String] = {
+    val sourceFile = scala.io.Source.fromFile(filePath)
+    val source = sourceFile.getLines().toList
+    sourceFile.close()
+    return source
+}
+
+def getDecompressedFileContent(filePath: String): List[String] = {
+    val inputStream = new InflaterInputStream(new FileInputStream(filePath))
+    val reader = new BufferedReader(new InputStreamReader(inputStream))
+    try {
+        Iterator.continually(reader.readLine()).takeWhile(_ != null).toList
+    } finally {
+        reader.close()
     }
 }

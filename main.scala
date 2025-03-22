@@ -115,6 +115,14 @@ import java.nio.file.{Files, Path, Paths}
         checkIfRepo(currentDir, "fatal: not a wegit repository", false)
         showAllBranches(currentDir)
 
+        case "diff" :: file :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        findFileDiff(currentDir, file)
+
+        case "diff--staged" :: file :: Nil =>
+        checkIfRepo(currentDir, "fatal: not a wegit repository", false)
+        findStagedFileDiff(currentDir, file)
+
         case "pls-work" :: Nil =>
         plsWork()
 
